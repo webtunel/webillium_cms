@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Session;
 
 class PrivilegesController extends CBController
 {
+
     public function cbInit()
     {
         $this->module_name = "Privilege";
@@ -42,6 +43,71 @@ class PrivilegesController extends CBController
         ];
     }
 
+    public function getIndex()
+    {
+        $this->cbLoader();
+
+        $module = CRUDBooster::getCurrentModule();
+
+        if (!CRUDBooster::isView() && $this->global_privilege == false) {
+            CRUDBooster::insertLog(cbLang('log_try_view', ['module' => $module->name]));
+            CRUDBooster::redirect(CRUDBooster::adminPath(), cbLang('denied_access'));
+        }
+
+        // Use parent's getIndex method to get the standard data
+        $result = parent::getIndex();
+
+        // If it's a PostgreSQL database, we need to modify the privileges data to avoid PDO::prepare error
+        if (DB::connection()->getDriverName() === 'pgsql') {
+            // Override moduls data for each privilege to use proper SQL query format
+            foreach ($result['result'] as $privilege) {
+                $id = $privilege->id;
+
+                // Get modules with properly cast DB::raw expressions
+                $moduls = DB::table("cms_moduls")
+                    ->where('is_protected', 0)
+                    ->whereNull('deleted_at')
+                    ->select([
+                        "cms_moduls.*",
+                        // Cast subqueries results to proper types to avoid PDO errors
+                        DB::raw("COALESCE((select is_visible::integer from cms_privileges_roles where id_cms_moduls = cms_moduls.id and id_cms_privileges = '$id'), 0) as is_visible"),
+                        DB::raw("COALESCE((select is_create::integer from cms_privileges_roles where id_cms_moduls = cms_moduls.id and id_cms_privileges = '$id'), 0) as is_create"),
+                        DB::raw("COALESCE((select is_read::integer from cms_privileges_roles where id_cms_moduls = cms_moduls.id and id_cms_privileges = '$id'), 0) as is_read"),
+                        DB::raw("COALESCE((select is_edit::integer from cms_privileges_roles where id_cms_moduls = cms_moduls.id and id_cms_privileges = '$id'), 0) as is_edit"),
+                        DB::raw("COALESCE((select is_delete::integer from cms_privileges_roles where id_cms_moduls = cms_moduls.id and id_cms_privileges = '$id'), 0) as is_delete")
+                    ])
+                    ->orderby("name", "asc")
+                    ->get();
+
+                // Store modules data per privilege
+                $privilege->moduls = $moduls;
+            }
+        } else {
+            // For MySQL and other drivers, get modules data normally
+            foreach ($result['result'] as $privilege) {
+                $id = $privilege->id;
+
+                $moduls = DB::table("cms_moduls")
+                    ->where('is_protected', 0)
+                    ->whereNull('deleted_at')
+                    ->select([
+                        "cms_moduls.*",
+                        DB::raw("(select is_visible from cms_privileges_roles where id_cms_moduls = cms_moduls.id and id_cms_privileges = '$id') as is_visible"),
+                        DB::raw("(select is_create from cms_privileges_roles where id_cms_moduls = cms_moduls.id and id_cms_privileges = '$id') as is_create"),
+                        DB::raw("(select is_read from cms_privileges_roles where id_cms_moduls = cms_moduls.id and id_cms_privileges = '$id') as is_read"),
+                        DB::raw("(select is_edit from cms_privileges_roles where id_cms_moduls = cms_moduls.id and id_cms_privileges = '$id') as is_edit"),
+                        DB::raw("(select is_delete from cms_privileges_roles where id_cms_moduls = cms_moduls.id and id_cms_privileges = '$id') as is_delete")
+                    ])
+                    ->orderby("name", "asc")
+                    ->get();
+
+                $privilege->moduls = $moduls;
+            }
+        }
+
+        return $result;
+    }
+
     public function getAdd()
     {
         $this->cbLoader();
@@ -53,7 +119,40 @@ class PrivilegesController extends CBController
 
         $id = 0;
         $data['page_title'] = "Add Data";
-        $data['moduls'] = DB::table("cms_moduls")->where('is_protected', 0)->whereNull('deleted_at')->select("cms_moduls.*", DB::raw("(select is_visible from cms_privileges_roles where id_cms_moduls = cms_moduls.id and id_cms_privileges = '$id') as is_visible"), DB::raw("(select is_create from cms_privileges_roles where id_cms_moduls  = cms_moduls.id and id_cms_privileges = '$id') as is_create"), DB::raw("(select is_read from cms_privileges_roles where id_cms_moduls    = cms_moduls.id and id_cms_privileges = '$id') as is_read"), DB::raw("(select is_edit from cms_privileges_roles where id_cms_moduls    = cms_moduls.id and id_cms_privileges = '$id') as is_edit"), DB::raw("(select is_delete from cms_privileges_roles where id_cms_moduls  = cms_moduls.id and id_cms_privileges = '$id') as is_delete"))->orderby("name", "asc")->get();
+
+        // Handle PostgreSQL differently
+        if (DB::connection()->getDriverName() === 'pgsql') {
+            $data['moduls'] = DB::table("cms_moduls")
+                ->where('is_protected', 0)
+                ->whereNull('deleted_at')
+                ->select([
+                    "cms_moduls.*",
+                    // Cast subqueries results to proper types to avoid PDO errors
+                    DB::raw("COALESCE((select is_visible::integer from cms_privileges_roles where id_cms_moduls = cms_moduls.id and id_cms_privileges = '$id'), 0) as is_visible"),
+                    DB::raw("COALESCE((select is_create::integer from cms_privileges_roles where id_cms_moduls = cms_moduls.id and id_cms_privileges = '$id'), 0) as is_create"),
+                    DB::raw("COALESCE((select is_read::integer from cms_privileges_roles where id_cms_moduls = cms_moduls.id and id_cms_privileges = '$id'), 0) as is_read"),
+                    DB::raw("COALESCE((select is_edit::integer from cms_privileges_roles where id_cms_moduls = cms_moduls.id and id_cms_privileges = '$id'), 0) as is_edit"),
+                    DB::raw("COALESCE((select is_delete::integer from cms_privileges_roles where id_cms_moduls = cms_moduls.id and id_cms_privileges = '$id'), 0) as is_delete")
+                ])
+                ->orderby("name", "asc")
+                ->get();
+        } else {
+            // For MySQL and other drivers
+            $data['moduls'] = DB::table("cms_moduls")
+                ->where('is_protected', 0)
+                ->whereNull('deleted_at')
+                ->select([
+                    "cms_moduls.*",
+                    DB::raw("(select is_visible from cms_privileges_roles where id_cms_moduls = cms_moduls.id and id_cms_privileges = '$id') as is_visible"),
+                    DB::raw("(select is_create from cms_privileges_roles where id_cms_moduls = cms_moduls.id and id_cms_privileges = '$id') as is_create"),
+                    DB::raw("(select is_read from cms_privileges_roles where id_cms_moduls = cms_moduls.id and id_cms_privileges = '$id') as is_read"),
+                    DB::raw("(select is_edit from cms_privileges_roles where id_cms_moduls = cms_moduls.id and id_cms_privileges = '$id') as is_edit"),
+                    DB::raw("(select is_delete from cms_privileges_roles where id_cms_moduls = cms_moduls.id and id_cms_privileges = '$id') as is_delete")
+                ])
+                ->orderby("name", "asc")
+                ->get();
+        }
+
         $data['page_menu'] = Route::getCurrentRoute()->getActionName();
 
         return view('crudbooster::privileges', $data);
@@ -118,7 +217,39 @@ class PrivilegesController extends CBController
 
         $page_title = cbLang('edit_data_page_title', ['module' => 'Privilege', 'name' => $row->name]);
 
-        $moduls = DB::table("cms_moduls")->where('is_protected', 0)->where('deleted_at', null)->select("cms_moduls.*")->orderby("name", "asc")->get();
+        // Handle PostgreSQL differently
+        if (DB::connection()->getDriverName() === 'pgsql') {
+            $moduls = DB::table("cms_moduls")
+                ->where('is_protected', 0)
+                ->whereNull('deleted_at')
+                ->select([
+                    "cms_moduls.*",
+                    // Cast subqueries results to proper types to avoid PDO errors
+                    DB::raw("COALESCE((select is_visible::integer from cms_privileges_roles where id_cms_moduls = cms_moduls.id and id_cms_privileges = '$id'), 0) as is_visible"),
+                    DB::raw("COALESCE((select is_create::integer from cms_privileges_roles where id_cms_moduls = cms_moduls.id and id_cms_privileges = '$id'), 0) as is_create"),
+                    DB::raw("COALESCE((select is_read::integer from cms_privileges_roles where id_cms_moduls = cms_moduls.id and id_cms_privileges = '$id'), 0) as is_read"),
+                    DB::raw("COALESCE((select is_edit::integer from cms_privileges_roles where id_cms_moduls = cms_moduls.id and id_cms_privileges = '$id'), 0) as is_edit"),
+                    DB::raw("COALESCE((select is_delete::integer from cms_privileges_roles where id_cms_moduls = cms_moduls.id and id_cms_privileges = '$id'), 0) as is_delete")
+                ])
+                ->orderby("name", "asc")
+                ->get();
+        } else {
+            // For MySQL and other drivers
+            $moduls = DB::table("cms_moduls")
+                ->where('is_protected', 0)
+                ->whereNull('deleted_at')
+                ->select([
+                    "cms_moduls.*",
+                    DB::raw("(select is_visible from cms_privileges_roles where id_cms_moduls = cms_moduls.id and id_cms_privileges = '$id') as is_visible"),
+                    DB::raw("(select is_create from cms_privileges_roles where id_cms_moduls = cms_moduls.id and id_cms_privileges = '$id') as is_create"),
+                    DB::raw("(select is_read from cms_privileges_roles where id_cms_moduls = cms_moduls.id and id_cms_privileges = '$id') as is_read"),
+                    DB::raw("(select is_edit from cms_privileges_roles where id_cms_moduls = cms_moduls.id and id_cms_privileges = '$id') as is_edit"),
+                    DB::raw("(select is_delete from cms_privileges_roles where id_cms_moduls = cms_moduls.id and id_cms_privileges = '$id') as is_delete")
+                ])
+                ->orderby("name", "asc")
+                ->get();
+        }
+
         $page_menu = Route::getCurrentRoute()->getActionName();
 
         return view('crudbooster::privileges', compact('row', 'page_title', 'moduls', 'page_menu'));

@@ -68,7 +68,7 @@ class CrudboosterUpdateCommand extends Command
         $this->info('Migrating database...');
         $this->call('migrate');
 
-        $this->call('db:seed', ['--class' => 'CBSeeder']);
+        $this->call('db:seed', ['--class' => 'Database\\Seeders\\CBSeeder']);
 
         $this->info('Clearing Cache...');
         Cache::flush();

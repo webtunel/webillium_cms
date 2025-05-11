@@ -59,7 +59,7 @@ class CrudboosterInstallationCommand extends Command
             $this->info('Migrating database...');
 
             $this->call('migrate');
-            $this->call('db:seed', ['--class' => 'CBSeeder']);
+            $this->call('db:seed', ['--class' => 'Database\\Seeders\\CBSeeder']);
             $this->call('config:clear');
             if (app()->version() < 5.6) {
                 $this->call('optimize');

@@ -74,7 +74,7 @@ class WebilliumQuickInstallCommand extends Command
         // Run migrations and seed the database
         $this->info('Running database migrations and seeding...');
         $this->call('migrate');
-        $this->call('db:seed', ['--class' => 'CBSeeder']);
+        $this->call('db:seed', ['--class' => 'Database\\Seeders\\CBSeeder']);
         $this->call('config:clear');
         
         $this->info('Creating initial admin user...');

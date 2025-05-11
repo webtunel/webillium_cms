@@ -27,7 +27,8 @@
         "intervention/imagecache": "^2.5",
         "intervention/image": "^2.7",
         "laravel/framework": "^10.0",
-        "krlove/code-generator": "^1.0"
+        "krlove/code-generator": "^1.0",
+        "opis/closure": "^3.6.3"
     },
     "autoload": {
         "psr-4": {

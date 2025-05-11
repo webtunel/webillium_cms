@@ -10,9 +10,16 @@
             <li class="menu-header">{{cbLang("menu_navigation")}}</li>
 
             <li class="menu-header"> <?php $dashboard = CRUDBooster::sidebarDashboard();?></li>
-            @if($dashboard)
+            @if($dashboard && isset($dashboard->id))
                 <li data-id='{{$dashboard->id}}'>
-                    <a class="nav-link {{ (Request::is(config('crudbooster.ADMIN_PATH'))) ? 'active' : '' }} {{($dashboard->color)?"text-".$dashboard->color:""}}"
+                    <a class="nav-link {{ (Request::is(config('crudbooster.ADMIN_PATH'))) ? 'active' : '' }} {{(isset($dashboard->color) && $dashboard->color)?"text-".$dashboard->color:""}}"
+                       href="{{CRUDBooster::adminPath()}}">
+                        <i class="fas fa-pencil-ruler"></i> <span>{{cbLang("text_dashboard")}}</span>
+                    </a>
+                </li>
+            @else
+                <li>
+                    <a class="nav-link {{ (Request::is(config('crudbooster.ADMIN_PATH'))) ? 'active' : '' }}"
                        href="{{CRUDBooster::adminPath()}}">
                         <i class="fas fa-pencil-ruler"></i> <span>{{cbLang("text_dashboard")}}</span>
                     </a>

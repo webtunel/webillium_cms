@@ -266,10 +266,10 @@ class CBController extends Controller
         $columns_table = $this->columns_table;
         foreach ($columns_table as $index => $coltab) {
 
-            $join = @$coltab['join'];
-            $join_where = @$coltab['join_where'];
-            $join_id = @$coltab['join_id'];
-            $field = @$coltab['name'];
+            $join = isset($coltab['join']) ? $coltab['join'] : null;
+            $join_where = isset($coltab['join_where']) ? $coltab['join_where'] : null;
+            $join_id = isset($coltab['join_id']) ? $coltab['join_id'] : null;
+            $field = isset($coltab['name']) ? $coltab['name'] : null;
             $join_table_temp[] = $table;
 
             if (! $field) {
@@ -334,10 +334,10 @@ class CBController extends Controller
                 $columns_table[$index]['field_with'] = $join_alias.'.'.$join_column;
                 $columns_table[$index]['field_raw'] = $join_column;
 
-                @$join_table1 = $join_exp[2];
-                @$joinTable1PK = CB::pk($join_table1);
-                @$join_column1 = $join_exp[3];
-                @$join_alias1 = $join_table1;
+                $join_table1 = isset($join_exp[2]) ? $join_exp[2] : null;
+                $joinTable1PK = $join_table1 ? CB::pk($join_table1) : null;
+                $join_column1 = isset($join_exp[3]) ? $join_exp[3] : null;
+                $join_alias1 = $join_table1;
 
                 if ($join_table1 && $join_column1) {
 
@@ -401,8 +401,8 @@ class CBController extends Controller
             $result->where(function ($w) use ($filter_column) {
                 foreach ($filter_column as $key => $fc) {
 
-                    $value = @$fc['value'];
-                    $type = @$fc['type'];
+                    $value = isset($fc['value']) ? $fc['value'] : '';
+                    $type = isset($fc['type']) ? $fc['type'] : '';
 
                     if ($type == 'empty') {
                         $w->whereNull($key)->orWhere($key, '');
@@ -444,9 +444,9 @@ class CBController extends Controller
             });
 
             foreach ($filter_column as $key => $fc) {
-                $value = @$fc['value'];
-                $type = @$fc['type'];
-                $sorting = @$fc['sorting'];
+                $value = isset($fc['value']) ? $fc['value'] : '';
+                $type = isset($fc['type']) ? $fc['type'] : '';
+                $sorting = isset($fc['sorting']) ? $fc['sorting'] : '';
 
                 if ($sorting != '') {
                     if ($key) {
@@ -610,6 +610,7 @@ class CBController extends Controller
             if ($this->button_table_action):
 
                 $button_action_style = $this->button_action_style;
+                $parent_field = isset($this->data['parent_field']) ? $this->data['parent_field'] : '';
                 $html_content[] = "<div class='button_action' style='text-align:right'>".view('crudbooster::components.action', compact('addaction', 'row', 'button_action_style', 'parent_field'))->render()."</div>";
 
             endif;//button_table_action
@@ -861,8 +862,8 @@ class CBController extends Controller
                 continue;
             }
 
-            if ($di['type'] != 'upload') {
-                if (@$di['required']) {
+            if (isset($di['type']) && $di['type'] != 'upload') {
+                if (isset($di['required']) && $di['required']) {
                     $ai[] = 'required';
                 }
             }

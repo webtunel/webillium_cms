@@ -64,19 +64,24 @@ class PrivilegesController extends CBController
             foreach ($result['result'] as $privilege) {
                 $id = $privilege->id;
 
-                // Get modules with properly cast DB::raw expressions
+                // Get modules with properly cast DB::raw expressions using bindings for proper type handling
                 $moduls = DB::table("cms_moduls")
                     ->where('is_protected', 0)
                     ->whereNull('deleted_at')
                     ->select([
                         "cms_moduls.*",
-                        // Cast subqueries results to proper types to avoid PDO errors
-                        DB::raw("COALESCE((select is_visible::integer from cms_privileges_roles where id_cms_moduls = cms_moduls.id and id_cms_privileges = '$id'), 0) as is_visible"),
-                        DB::raw("COALESCE((select is_create::integer from cms_privileges_roles where id_cms_moduls = cms_moduls.id and id_cms_privileges = '$id'), 0) as is_create"),
-                        DB::raw("COALESCE((select is_read::integer from cms_privileges_roles where id_cms_moduls = cms_moduls.id and id_cms_privileges = '$id'), 0) as is_read"),
-                        DB::raw("COALESCE((select is_edit::integer from cms_privileges_roles where id_cms_moduls = cms_moduls.id and id_cms_privileges = '$id'), 0) as is_edit"),
-                        DB::raw("COALESCE((select is_delete::integer from cms_privileges_roles where id_cms_moduls = cms_moduls.id and id_cms_privileges = '$id'), 0) as is_delete")
+                        // Use parameter binding with DB::raw to avoid issues with string literals
+                        DB::raw("COALESCE((select is_visible::integer from cms_privileges_roles where id_cms_moduls = cms_moduls.id and id_cms_privileges = ?), 0) as is_visible"),
+                        DB::raw("COALESCE((select is_create::integer from cms_privileges_roles where id_cms_moduls = cms_moduls.id and id_cms_privileges = ?), 0) as is_create"),
+                        DB::raw("COALESCE((select is_read::integer from cms_privileges_roles where id_cms_moduls = cms_moduls.id and id_cms_privileges = ?), 0) as is_read"),
+                        DB::raw("COALESCE((select is_edit::integer from cms_privileges_roles where id_cms_moduls = cms_moduls.id and id_cms_privileges = ?), 0) as is_edit"),
+                        DB::raw("COALESCE((select is_delete::integer from cms_privileges_roles where id_cms_moduls = cms_moduls.id and id_cms_privileges = ?), 0) as is_delete")
                     ])
+                    ->addBinding($id, 'select')
+                    ->addBinding($id, 'select')
+                    ->addBinding($id, 'select')
+                    ->addBinding($id, 'select')
+                    ->addBinding($id, 'select')
                     ->orderby("name", "asc")
                     ->get();
 
@@ -93,12 +98,17 @@ class PrivilegesController extends CBController
                     ->whereNull('deleted_at')
                     ->select([
                         "cms_moduls.*",
-                        DB::raw("(select is_visible from cms_privileges_roles where id_cms_moduls = cms_moduls.id and id_cms_privileges = '$id') as is_visible"),
-                        DB::raw("(select is_create from cms_privileges_roles where id_cms_moduls = cms_moduls.id and id_cms_privileges = '$id') as is_create"),
-                        DB::raw("(select is_read from cms_privileges_roles where id_cms_moduls = cms_moduls.id and id_cms_privileges = '$id') as is_read"),
-                        DB::raw("(select is_edit from cms_privileges_roles where id_cms_moduls = cms_moduls.id and id_cms_privileges = '$id') as is_edit"),
-                        DB::raw("(select is_delete from cms_privileges_roles where id_cms_moduls = cms_moduls.id and id_cms_privileges = '$id') as is_delete")
+                        DB::raw("(select is_visible from cms_privileges_roles where id_cms_moduls = cms_moduls.id and id_cms_privileges = ?) as is_visible"),
+                        DB::raw("(select is_create from cms_privileges_roles where id_cms_moduls = cms_moduls.id and id_cms_privileges = ?) as is_create"),
+                        DB::raw("(select is_read from cms_privileges_roles where id_cms_moduls = cms_moduls.id and id_cms_privileges = ?) as is_read"),
+                        DB::raw("(select is_edit from cms_privileges_roles where id_cms_moduls = cms_moduls.id and id_cms_privileges = ?) as is_edit"),
+                        DB::raw("(select is_delete from cms_privileges_roles where id_cms_moduls = cms_moduls.id and id_cms_privileges = ?) as is_delete")
                     ])
+                    ->addBinding($id, 'select')
+                    ->addBinding($id, 'select')
+                    ->addBinding($id, 'select')
+                    ->addBinding($id, 'select')
+                    ->addBinding($id, 'select')
                     ->orderby("name", "asc")
                     ->get();
 
@@ -129,13 +139,18 @@ class PrivilegesController extends CBController
                 ->whereNull('deleted_at')
                 ->select([
                     "cms_moduls.*",
-                    // Cast subqueries results to proper types to avoid PDO errors
-                    DB::raw("COALESCE((select is_visible::integer from cms_privileges_roles where id_cms_moduls = cms_moduls.id and id_cms_privileges = '$id'), 0) as is_visible"),
-                    DB::raw("COALESCE((select is_create::integer from cms_privileges_roles where id_cms_moduls = cms_moduls.id and id_cms_privileges = '$id'), 0) as is_create"),
-                    DB::raw("COALESCE((select is_read::integer from cms_privileges_roles where id_cms_moduls = cms_moduls.id and id_cms_privileges = '$id'), 0) as is_read"),
-                    DB::raw("COALESCE((select is_edit::integer from cms_privileges_roles where id_cms_moduls = cms_moduls.id and id_cms_privileges = '$id'), 0) as is_edit"),
-                    DB::raw("COALESCE((select is_delete::integer from cms_privileges_roles where id_cms_moduls = cms_moduls.id and id_cms_privileges = '$id'), 0) as is_delete")
+                    // Use parameter binding with DB::raw to avoid issues with string literals
+                    DB::raw("COALESCE((select is_visible::integer from cms_privileges_roles where id_cms_moduls = cms_moduls.id and id_cms_privileges = ?), 0) as is_visible"),
+                    DB::raw("COALESCE((select is_create::integer from cms_privileges_roles where id_cms_moduls = cms_moduls.id and id_cms_privileges = ?), 0) as is_create"),
+                    DB::raw("COALESCE((select is_read::integer from cms_privileges_roles where id_cms_moduls = cms_moduls.id and id_cms_privileges = ?), 0) as is_read"),
+                    DB::raw("COALESCE((select is_edit::integer from cms_privileges_roles where id_cms_moduls = cms_moduls.id and id_cms_privileges = ?), 0) as is_edit"),
+                    DB::raw("COALESCE((select is_delete::integer from cms_privileges_roles where id_cms_moduls = cms_moduls.id and id_cms_privileges = ?), 0) as is_delete")
                 ])
+                ->addBinding($id, 'select')
+                ->addBinding($id, 'select')
+                ->addBinding($id, 'select')
+                ->addBinding($id, 'select')
+                ->addBinding($id, 'select')
                 ->orderby("name", "asc")
                 ->get();
         } else {
@@ -145,12 +160,17 @@ class PrivilegesController extends CBController
                 ->whereNull('deleted_at')
                 ->select([
                     "cms_moduls.*",
-                    DB::raw("(select is_visible from cms_privileges_roles where id_cms_moduls = cms_moduls.id and id_cms_privileges = '$id') as is_visible"),
-                    DB::raw("(select is_create from cms_privileges_roles where id_cms_moduls = cms_moduls.id and id_cms_privileges = '$id') as is_create"),
-                    DB::raw("(select is_read from cms_privileges_roles where id_cms_moduls = cms_moduls.id and id_cms_privileges = '$id') as is_read"),
-                    DB::raw("(select is_edit from cms_privileges_roles where id_cms_moduls = cms_moduls.id and id_cms_privileges = '$id') as is_edit"),
-                    DB::raw("(select is_delete from cms_privileges_roles where id_cms_moduls = cms_moduls.id and id_cms_privileges = '$id') as is_delete")
+                    DB::raw("(select is_visible from cms_privileges_roles where id_cms_moduls = cms_moduls.id and id_cms_privileges = ?) as is_visible"),
+                    DB::raw("(select is_create from cms_privileges_roles where id_cms_moduls = cms_moduls.id and id_cms_privileges = ?) as is_create"),
+                    DB::raw("(select is_read from cms_privileges_roles where id_cms_moduls = cms_moduls.id and id_cms_privileges = ?) as is_read"),
+                    DB::raw("(select is_edit from cms_privileges_roles where id_cms_moduls = cms_moduls.id and id_cms_privileges = ?) as is_edit"),
+                    DB::raw("(select is_delete from cms_privileges_roles where id_cms_moduls = cms_moduls.id and id_cms_privileges = ?) as is_delete")
                 ])
+                ->addBinding($id, 'select')
+                ->addBinding($id, 'select')
+                ->addBinding($id, 'select')
+                ->addBinding($id, 'select')
+                ->addBinding($id, 'select')
                 ->orderby("name", "asc")
                 ->get();
         }
@@ -227,13 +247,18 @@ class PrivilegesController extends CBController
                 ->whereNull('deleted_at')
                 ->select([
                     "cms_moduls.*",
-                    // Cast subqueries results to proper types to avoid PDO errors
-                    DB::raw("COALESCE((select is_visible::integer from cms_privileges_roles where id_cms_moduls = cms_moduls.id and id_cms_privileges = '$id'), 0) as is_visible"),
-                    DB::raw("COALESCE((select is_create::integer from cms_privileges_roles where id_cms_moduls = cms_moduls.id and id_cms_privileges = '$id'), 0) as is_create"),
-                    DB::raw("COALESCE((select is_read::integer from cms_privileges_roles where id_cms_moduls = cms_moduls.id and id_cms_privileges = '$id'), 0) as is_read"),
-                    DB::raw("COALESCE((select is_edit::integer from cms_privileges_roles where id_cms_moduls = cms_moduls.id and id_cms_privileges = '$id'), 0) as is_edit"),
-                    DB::raw("COALESCE((select is_delete::integer from cms_privileges_roles where id_cms_moduls = cms_moduls.id and id_cms_privileges = '$id'), 0) as is_delete")
+                    // Use parameter binding with DB::raw to avoid issues with string literals
+                    DB::raw("COALESCE((select is_visible::integer from cms_privileges_roles where id_cms_moduls = cms_moduls.id and id_cms_privileges = ?), 0) as is_visible"),
+                    DB::raw("COALESCE((select is_create::integer from cms_privileges_roles where id_cms_moduls = cms_moduls.id and id_cms_privileges = ?), 0) as is_create"),
+                    DB::raw("COALESCE((select is_read::integer from cms_privileges_roles where id_cms_moduls = cms_moduls.id and id_cms_privileges = ?), 0) as is_read"),
+                    DB::raw("COALESCE((select is_edit::integer from cms_privileges_roles where id_cms_moduls = cms_moduls.id and id_cms_privileges = ?), 0) as is_edit"),
+                    DB::raw("COALESCE((select is_delete::integer from cms_privileges_roles where id_cms_moduls = cms_moduls.id and id_cms_privileges = ?), 0) as is_delete")
                 ])
+                ->addBinding($id, 'select')
+                ->addBinding($id, 'select')
+                ->addBinding($id, 'select')
+                ->addBinding($id, 'select')
+                ->addBinding($id, 'select')
                 ->orderby("name", "asc")
                 ->get();
         } else {
@@ -243,12 +268,17 @@ class PrivilegesController extends CBController
                 ->whereNull('deleted_at')
                 ->select([
                     "cms_moduls.*",
-                    DB::raw("(select is_visible from cms_privileges_roles where id_cms_moduls = cms_moduls.id and id_cms_privileges = '$id') as is_visible"),
-                    DB::raw("(select is_create from cms_privileges_roles where id_cms_moduls = cms_moduls.id and id_cms_privileges = '$id') as is_create"),
-                    DB::raw("(select is_read from cms_privileges_roles where id_cms_moduls = cms_moduls.id and id_cms_privileges = '$id') as is_read"),
-                    DB::raw("(select is_edit from cms_privileges_roles where id_cms_moduls = cms_moduls.id and id_cms_privileges = '$id') as is_edit"),
-                    DB::raw("(select is_delete from cms_privileges_roles where id_cms_moduls = cms_moduls.id and id_cms_privileges = '$id') as is_delete")
+                    DB::raw("(select is_visible from cms_privileges_roles where id_cms_moduls = cms_moduls.id and id_cms_privileges = ?) as is_visible"),
+                    DB::raw("(select is_create from cms_privileges_roles where id_cms_moduls = cms_moduls.id and id_cms_privileges = ?) as is_create"),
+                    DB::raw("(select is_read from cms_privileges_roles where id_cms_moduls = cms_moduls.id and id_cms_privileges = ?) as is_read"),
+                    DB::raw("(select is_edit from cms_privileges_roles where id_cms_moduls = cms_moduls.id and id_cms_privileges = ?) as is_edit"),
+                    DB::raw("(select is_delete from cms_privileges_roles where id_cms_moduls = cms_moduls.id and id_cms_privileges = ?) as is_delete")
                 ])
+                ->addBinding($id, 'select')
+                ->addBinding($id, 'select')
+                ->addBinding($id, 'select')
+                ->addBinding($id, 'select')
+                ->addBinding($id, 'select')
                 ->orderby("name", "asc")
                 ->get();
         }

@@ -13,6 +13,8 @@ class AdminController extends CBController
     {
         $data = [];
         $data['page_title'] = '<strong>Dashboard</strong>';
+        $data['load_js'] = [];
+        $data['script_js'] = '';
 
         return view('crudbooster::home', $data);
     }

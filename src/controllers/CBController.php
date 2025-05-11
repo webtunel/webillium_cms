@@ -541,24 +541,25 @@ class CBController extends Controller
             }
 
             foreach ($columns_table as $col) {
-                if ($col['visible'] === false) {
+                // Skip if the column is explicitly set to not be visible
+                if (isset($col['visible']) && $col['visible'] === false) {
                     continue;
                 }
 
-                $value = @$row->{$col['field']};
-                $title = @$row->{$this->title_field};
-                $label = $col['label'];
+                $value = isset($row->{$col['field']}) ? $row->{$col['field']} : null;
+                $title = isset($row->{$this->title_field}) ? $row->{$this->title_field} : null;
+                $label = isset($col['label']) ? $col['label'] : '';
 
-                if (isset($col['image'])) {
-                    if ($value == '') {
-                        $value = "<a  data-lightbox='roadtrip' rel='group_{{$table}}' title='$label: $title' href='".asset('vendor/crudbooster/avatar.jpg')."'><img width='40px' height='40px' src='".asset('vendor/crudbooster/avatar.jpg')."'/></a>";
+                if (isset($col['image']) && $col['image']) {
+                    if (empty($value)) {
+                        $value = "<a data-lightbox='roadtrip' rel='group_{{$table}}' title='$label: $title' href='".asset('vendor/crudbooster/avatar.jpg')."'><img width='40px' height='40px' src='".asset('vendor/crudbooster/avatar.jpg')."'/></a>";
                     } else {
                         $pic = (strpos($value, 'http://') !== false) ? $value : asset($value);
-                        $value = "<a data-lightbox='roadtrip'  rel='group_{{$table}}' title='$label: $title' href='".$pic."'><img width='40px' height='40px' src='".$pic."'/></a>";
+                        $value = "<a data-lightbox='roadtrip' rel='group_{{$table}}' title='$label: $title' href='".$pic."'><img width='40px' height='40px' src='".$pic."'/></a>";
                     }
                 }
 
-                if (@$col['download']) {
+                if (isset($col['download']) && $col['download']) {
                     $url = (strpos($value, 'http://') !== false) ? $value : asset($value).'?download=1';
                     if ($value) {
                         $value = "<a class='btn btn-xs btn-primary' href='$url' target='_blank' title='Download File'><i class='fa fa-download'></i> Download</a>";
@@ -567,16 +568,16 @@ class CBController extends Controller
                     }
                 }
 
-                if ($col['str_limit']) {
+                if (isset($col['str_limit']) && $col['str_limit']) {
                     $value = trim(strip_tags($value));
                     $value = str_limit($value, $col['str_limit']);
                 }
 
-                if ($col['nl2br']) {
+                if (isset($col['nl2br']) && $col['nl2br']) {
                     $value = nl2br($value);
                 }
 
-                if ($col['callback_php']) {
+                if (isset($col['callback_php']) && $col['callback_php']) {
                     foreach ($row as $k => $v) {
                         $col['callback_php'] = str_replace("[".$k."]", $v, $col['callback_php']);
                     }

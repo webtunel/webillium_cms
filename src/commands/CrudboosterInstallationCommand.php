@@ -1,4 +1,4 @@
-<?php namespace crocodicstudio\crudbooster\commands;
+<?php namespace webtunel\webilliumcms\commands;
 
 use App;
 use Cache;
@@ -44,8 +44,8 @@ class CrudboosterInstallationCommand extends Command
                 mkdir(public_path('vendor'), 0777);
             }
 
-            $this->info('Publishing crudbooster assets...');
-            $this->call('vendor:publish', ['--provider' => 'crocodicstudio\crudbooster\CRUDBoosterServiceProvider']);
+            $this->info('Publishing WebilliumCMS assets...');
+            $this->call('vendor:publish', ['--provider' => 'webtunel\webilliumcms\CRUDBoosterServiceProvider']);
 
             $this->info('Dumping the autoloaded files and reloading all new files...');
             $composer = $this->findComposer();
@@ -65,7 +65,7 @@ class CrudboosterInstallationCommand extends Command
                 $this->call('optimize');
             }
 
-            $this->info('Installing CRUDBooster Is Completed ! Thank You :)');
+            $this->info('Installing WebilliumCMS Is Completed ! Thank You :)');
         } else {
             $this->info('Setup Aborted !');
             $this->info('Please setting the database configuration for first !');
@@ -177,9 +177,8 @@ class CrudboosterInstallationCommand extends Command
     private function footer($success = true)
     {
         $this->info('--');
-        $this->info('Homepage : http://www.crudbooster.com');
-        $this->info('Github : https://github.com/crocodic-studio/crudbooster');
-        $this->info('Documentation : https://github.com/crocodic-studio/crudbooster/blob/master/docs/en/index.md');
+        $this->info('Github : https://github.com/webtunel/webillium_cms');
+        $this->info('Documentation : https://github.com/webtunel/webillium_cms/blob/master/docs/en/index.md');
         $this->info('====================================================================');
         if ($success == true) {
             $this->info('------------------- :===: Completed !! :===: ------------------------');

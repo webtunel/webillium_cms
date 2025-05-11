@@ -1,16 +1,16 @@
 <?php
 
-namespace crocodicstudio\crudbooster\helpers;
+namespace webtunel\webilliumcms\helpers;
 
 
-use crocodicstudio\crudbooster\middlewares\CBAuthAPI;
+use webtunel\webilliumcms\middlewares\CBAuthAPI;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Route;
 use DB;
 
 class CBRouter
 {
-    private static $cb_namespace = '\crocodicstudio\crudbooster\controllers';
+    private static $cb_namespace = '\webtunel\webilliumcms\controllers';
 
     public static function getCBControllerFiles() {
         $controllers = glob(__DIR__.'/../controllers/*.php');
@@ -66,7 +66,7 @@ class CBRouter
 
     private static function userControllerRoute() {
         Route::group([
-            'middleware' => ['web', '\crocodicstudio\crudbooster\middlewares\CBBackend'],
+            'middleware' => ['web', \webtunel\webilliumcms\middlewares\CBBackend::class],
             'prefix' => config('crudbooster.ADMIN_PATH'),
             'namespace' => 'App\Http\Controllers',
         ], function () {
@@ -100,7 +100,7 @@ class CBRouter
 
     private static function cbRoute() {
         Route::group([
-            'middleware' => ['web', '\crocodicstudio\crudbooster\middlewares\CBBackend'],
+            'middleware' => ['web', \webtunel\webilliumcms\middlewares\CBBackend::class],
             'prefix' => config('crudbooster.ADMIN_PATH'),
             'namespace' => static::$cb_namespace,
         ], function () {
@@ -151,9 +151,9 @@ class CBRouter
                         $modalName = str_replace(" ", "", $modalName);
 
                         if (file_exists(app_path('Models/'.$modalName.'.php'))) {
-                            echo 'Exist '.app_path('Modals/'.$modalName.'.php<br>');
+                            echo 'Exist '.app_path('Models/'.$modalName.'.php<br>');
                         }else{
-                            echo 'NOT Exist '.app_path('Modals/'.$modalName.'.php<br>');
+                            echo 'NOT Exist '.app_path('Models/'.$modalName.'.php<br>');
                             \Artisan::call('krlove:generate:model '.$modalName.' --table-name='.$table.' --output-path='.app_path('Models'));
                         }
                     }

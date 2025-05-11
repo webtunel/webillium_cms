@@ -33,16 +33,22 @@ class CBBackend
             $menus=DB::table('cms_menus')->whereRaw("cms_menus.id IN (select id_cms_menus from cms_menus_privileges where id_cms_privileges = '".CRUDBooster::myPrivilegeId()."')")->where('is_dashboard', 1)->where('is_active', 1)->first();
             if ($menus) {
                 if ($menus->type == 'Statistic') {
-                    return redirect()->action('\crocodicstudio\crudbooster\controllers\StatisticBuilderController@getDashboard');
+                    return redirect()->action(['\crocodicstudio\crudbooster\controllers\StatisticBuilderController', 'getDashboard']);
                 } elseif ($menus->type == 'Module') {
                     $module = CRUDBooster::first('cms_moduls', ['path' => $menus->path]);
-                    return redirect()->action( $module->controller.'@getIndex');
+                    $controller = $module->controller;
+                    return redirect()->action([$controller, 'getIndex']);
                 } elseif ($menus->type == 'Route') {
-                    $action = str_replace("Controller", "Controller@", $menus->path);
-                    $action = str_replace(['Get', 'Post'], ['get', 'post'], $action);
-                    return redirect()->action($action);
+                    $parts = explode('@', str_replace("Controller", "Controller@", $menus->path));
+                    $controller = $parts[0];
+                    $method = $parts[1] ?? 'index';
+                    $method = str_replace(['Get', 'Post'], ['get', 'post'], $method);
+                    return redirect()->action([$controller, $method]);
                 } elseif ($menus->type == 'Controller & Method') {
-                    return redirect()->action($menus->path);
+                    $parts = explode('@', $menus->path);
+                    $controller = $parts[0];
+                    $method = $parts[1] ?? 'index';
+                    return redirect()->action([$controller, $method]);
                 } elseif ($menus->type == 'URL') {
                     return redirect($menus->path);
                 }

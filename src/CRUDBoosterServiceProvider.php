@@ -1,12 +1,13 @@
-<?php namespace crocodicstudio\crudbooster;
+<?php namespace webtunel\webilliumcms;
 
-use crocodicstudio\crudbooster\commands\CrudboosterVersionCommand;
-use crocodicstudio\crudbooster\commands\Mailqueues;
+use webtunel\webilliumcms\commands\CrudboosterVersionCommand;
+use webtunel\webilliumcms\commands\Mailqueues;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\ServiceProvider;
-use crocodicstudio\crudbooster\commands\CrudboosterInstallationCommand;
-use crocodicstudio\crudbooster\commands\CrudboosterUpdateCommand;
+use webtunel\webilliumcms\commands\CrudboosterInstallationCommand;
+use webtunel\webilliumcms\commands\CrudboosterUpdateCommand;
+use webtunel\webilliumcms\commands\WebilliumQuickInstallCommand;
 use Illuminate\Foundation\AliasLoader;
 use App;
 
@@ -29,10 +30,18 @@ class CRUDBoosterServiceProvider extends ServiceProvider
 
         if($this->app->runningInConsole()) {
             $this->registerSeedsFrom(__DIR__.'/database/seeds');
-            $this->publishes([__DIR__.'/configs/crudbooster.php' => config_path('crudbooster.php')],'cb_config');
-            $this->publishes([__DIR__.'/userfiles/controllers/CBHook.php' => app_path('Http/Controllers/CBHook.php')],'CBHook');
-            $this->publishes([__DIR__.'/userfiles/controllers/AdminCmsUsersController.php' => app_path('Http/Controllers/AdminCmsUsersController.php')],'cb_user_controller');
-            $this->publishes([__DIR__.'/assets'=>public_path('vendor/crudbooster')],'cb_asset');
+            $this->publishes([__DIR__.'/configs/crudbooster.php' => config_path('crudbooster.php')], 'cb_config');
+            $this->publishes([__DIR__.'/userfiles/controllers/CBHook.php' => app_path('Http/Controllers/CBHook.php')], 'cb_hook');
+            $this->publishes([__DIR__.'/userfiles/controllers/AdminCmsUsersController.php' => app_path('Http/Controllers/AdminCmsUsersController.php')], 'cb_user_controller');
+            $this->publishes([__DIR__.'/assets'=>public_path('vendor/crudbooster')], 'cb_asset');
+
+            // Publish all assets in one go
+            $this->publishes([
+                __DIR__.'/configs/crudbooster.php' => config_path('crudbooster.php'),
+                __DIR__.'/userfiles/controllers/CBHook.php' => app_path('Http/Controllers/CBHook.php'),
+                __DIR__.'/userfiles/controllers/AdminCmsUsersController.php' => app_path('Http/Controllers/AdminCmsUsersController.php'),
+                __DIR__.'/assets'=>public_path('vendor/crudbooster')
+            ], 'cb_all');
         }
 
         $this->customValidation();
@@ -57,14 +66,15 @@ class CRUDBoosterServiceProvider extends ServiceProvider
             $this->commands('crudboosterupdate');
             $this->commands('crudboosterVersionCommand');
             $this->commands('crudboosterMailQueue');
+            $this->commands('webilliumQuickInstall');
         }
 
         $loader = AliasLoader::getInstance();
-        $loader->alias('PDF', 'Barryvdh\DomPDF\Facade');
+        $loader->alias('PDF', 'Barryvdh\DomPDF\Facade\Pdf');
         $loader->alias('Excel', 'Maatwebsite\Excel\Facades\Excel');
         $loader->alias('Image', 'Intervention\Image\ImageManagerStatic');
-        $loader->alias('CRUDBooster', 'crocodicstudio\crudbooster\helpers\CRUDBooster');
-        $loader->alias('CB', 'crocodicstudio\crudbooster\helpers\CB');
+        $loader->alias('CRUDBooster', 'webtunel\webilliumcms\helpers\CRUDBooster');
+        $loader->alias('CB', 'webtunel\webilliumcms\helpers\CB');
     }
    
     private function registerSingleton()
@@ -88,6 +98,10 @@ class CRUDBoosterServiceProvider extends ServiceProvider
 
         $this->app->singleton("crudboosterMailQueue", function() {
             return new Mailqueues;
+        });
+
+        $this->app->singleton("webilliumQuickInstall", function() {
+            return new WebilliumQuickInstallCommand;
         });
     }
 

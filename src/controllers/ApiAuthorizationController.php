@@ -1,10 +1,10 @@
 <?php
 
 
-namespace crocodicstudio\crudbooster\controllers;
+namespace webtunel\webilliumcms\controllers;
 
 
-use crocodicstudio\crudbooster\helpers\CB;
+use webtunel\webilliumcms\helpers\CB;
 use Illuminate\Support\Facades\Cache;
 
 class ApiAuthorizationController extends Controller
@@ -20,7 +20,7 @@ class ApiAuthorizationController extends Controller
             ->where("status","active")
             ->count();
         if($exists) {
-            $accessToken = str_random($this->token_length);;
+            $accessToken = \Illuminate\Support\Str::random($this->token_length);
             Cache::put("api_token_".$accessToken,[
                 "ip"=> $_SERVER['REMOTE_ADDR'],
                 "user_agent"=> $_SERVER['HTTP_USER_AGENT']

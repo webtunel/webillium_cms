@@ -1,52 +1,83 @@
 # Welcome To Webillium CMS
 
-Webillium CMS is CRUD Generator for laravel, with the most important features web application development. It's easy, flexible, and powerful.
+Webillium CMS is a powerful CRUD Generator for Laravel, offering essential features for rapid web application development. It's easy to use, flexible, and customizable.
 
-## System Requirement and Basic Technical Knowledge
-- Web Server as:
-  - Apache 2.4.x or higher with rewrite engine on (mod_rewrite)  
+## System Requirements and Technical Prerequisites
+- Web Server:
+  - Apache 2.4.x or higher with mod_rewrite enabled
   - Nginx 1.11.x or higher
-- Database that laravel supports, actually can be:
+- Database (Laravel compatible):
   - MySQL
-  - Postgres
+  - PostgreSQL
   - SQLite
   - SQL Server
 - Composer
-- Laravel 6.* / 7.* / 8.*
-- Php 7.2 or higher and the extensions:
-  - Mcrypt
+- Laravel 8.* / 9.* / 10.*
+- PHP 7.3 or higher with the following extensions:
   - OpenSSL
+  - PDO
   - Mbstring
   - Tokenizer
+  - XML
   - FileInfo
+  - GD Library
 
-## Installation
+## Installation Options
 
-0. Please make sure you have install laravel project, please follow [https://laravel.com/docs/8.x/installation](https://laravel.com/docs/8.x/installation)
+### Option 1: One-Line Installation (Recommended)
 
-1. Open the terminal, navigate to your laravel project directory.
-```php
-$ composer require crocodicstudio/crudbooster=5.6.*
+0. Make sure you have a fresh Laravel installation. Follow the [Laravel installation guide](https://laravel.com/docs/10.x/installation)
+
+1. In your Laravel project directory, run this single command:
+
+```bash
+curl -s https://raw.githubusercontent.com/webtunel/webillium_cms/v5.6/install-webillium.sh | bash
 ```
 
-2. Setting the database configuration, open .env file at project root directory
-```
-DB_DATABASE=**your_db_name**
-DB_USERNAME=**your_db_user**
-DB_PASSWORD=**password**
+### Option 2: Manual Installation
+
+0. Ensure you have a working Laravel project.
+
+1. Open the terminal, navigate to your Laravel project directory.
+
+```bash
+# Add the repository
+composer config repositories.webilliumcms git https://github.com/webtunel/webillium_cms.git
+
+# Install the package
+composer require webtunel/webilliumcms:v5.6.x-dev
 ```
 
-3. Run the following command at the terminal
-```php
-$ php artisan webillium:install
+2. Configure your database connection in the .env file:
+
+```
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=your_database_name
+DB_USERNAME=your_database_username
+DB_PASSWORD=your_database_password
 ```
 
-## Backend URL
-```php
-/admin/login
+3. Run the installation command:
+
+```bash
+php artisan webillium:quick-install
 ```
-- default email : admin@crudbooster.com
-- default password : 123456
+
+## Accessing Your Admin Panel
+
+After installation, you can access your admin panel at:
+
+```
+http://your-domain.com/admin
+```
+
+Default login credentials:
+- **Email:** admin@admin.com
+- **Password:** 123456
+
+**Important:** For security reasons, change these credentials immediately after your first login.
 
 ## What's Next
 - [How To Create A Module (CRUD)](./how-to-create-module.md)

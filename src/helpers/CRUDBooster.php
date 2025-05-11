@@ -1,16 +1,17 @@
 <?php
 
-namespace crocodicstudio\crudbooster\helpers;
+namespace webtunel\webilliumcms\helpers;
 
-use Cache;
-use DB;
-use Image;
-use Request;
-use Route;
-use Schema;
-use Session;
-use Storage;
-use Validator;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
+use Intervention\Image\Facades\Image;
+use Illuminate\Support\Facades\Request;
+use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\Session;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Str;
 
 class CRUDBooster
 {
@@ -44,7 +45,7 @@ class CRUDBooster
         if ($mime_type) {
             $filePath = 'uploads/'.$userID.'/'.date('Y-m');
             Storage::makeDirectory($filePath);
-            $filename = md5(str_random(5)).'.'.$mime_type;
+            $filename = md5(Str::random(5)).'.'.$mime_type;
             if (Storage::put($filePath.'/'.$filename, $filedata)) {
                 self::resizeImage($filePath.'/'.$filename);
 
@@ -80,9 +81,9 @@ class CRUDBooster
             Storage::makeDirectory($file_path);
 
             if ($encrypt == true) {
-                $filename = md5(str_random(5)).'.'.$ext;
+                $filename = md5(Str::random(5)).'.'.$ext;
             } else {
-                $filename = str_slug($filename, '_').'.'.$ext;
+                $filename = Str::slug($filename, '_').'.'.$ext;
             }
 
             if (Storage::putFileAs($file_path, $file, $filename)) {
@@ -551,7 +552,7 @@ class CRUDBooster
     public static function mainpath($path = null)
     {
 
-        $controllername = str_replace(["\crocodicstudio\crudbooster\controllers\\", "App\Http\Controllers\\"], "", strtok(Route::currentRouteAction(), '@'));
+        $controllername = str_replace(["\webtunel\webilliumcms\controllers\\", "App\Http\Controllers\\"], "", strtok(Route::currentRouteAction(), '@'));
         $route_url = route($controllername.'GetIndex');
 
         if ($path) {

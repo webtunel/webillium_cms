@@ -522,7 +522,7 @@ class CBController extends Controller
         }
 
         $mainpath = CRUDBooster::mainpath();
-        $orig_mainpath = $this->data['mainpath'];
+        $orig_mainpath = $mainpath; // Use the mainpath directly instead of an undefined array key
         $title_field = $this->title_field;
         $html_contents = [];
         $page = (request('page')) ? request('page') : 1;

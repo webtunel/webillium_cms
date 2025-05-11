@@ -58,7 +58,8 @@ class PrivilegesController extends CBController
         $result = parent::getIndex();
 
         // If it's a PostgreSQL database, we need to modify the privileges data to avoid PDO::prepare error
-        if (DB::connection()->getDriverName() === 'pgsql') {
+        $driver = DB::connection()->getPdo()->getAttribute(\PDO::ATTR_DRIVER_NAME);
+        if ($driver === 'pgsql') {
             // Override moduls data for each privilege to use proper SQL query format
             foreach ($result['result'] as $privilege) {
                 $id = $privilege->id;
@@ -121,7 +122,8 @@ class PrivilegesController extends CBController
         $data['page_title'] = "Add Data";
 
         // Handle PostgreSQL differently
-        if (DB::connection()->getDriverName() === 'pgsql') {
+        $driver = DB::connection()->getPdo()->getAttribute(\PDO::ATTR_DRIVER_NAME);
+        if ($driver === 'pgsql') {
             $data['moduls'] = DB::table("cms_moduls")
                 ->where('is_protected', 0)
                 ->whereNull('deleted_at')
@@ -218,7 +220,8 @@ class PrivilegesController extends CBController
         $page_title = cbLang('edit_data_page_title', ['module' => 'Privilege', 'name' => $row->name]);
 
         // Handle PostgreSQL differently
-        if (DB::connection()->getDriverName() === 'pgsql') {
+        $driver = DB::connection()->getPdo()->getAttribute(\PDO::ATTR_DRIVER_NAME);
+        if ($driver === 'pgsql') {
             $moduls = DB::table("cms_moduls")
                 ->where('is_protected', 0)
                 ->whereNull('deleted_at')

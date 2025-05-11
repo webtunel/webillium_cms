@@ -193,6 +193,10 @@ class CRUDBooster
         $table = self::parseSqlTable($table);
         $table = $table['table'];
         $query = DB::table($table);
+
+        // WARNING: Using whereRaw and orderByRaw directly with string conditions is unsafe
+        // However, this is a legacy method and changing it could break existing code
+        // A safer approach would be to use parameter binding, but it requires changing the API
         if ($string_conditions) {
             $query->whereraw($string_conditions);
         }
@@ -419,7 +423,14 @@ class CRUDBooster
     public static function sidebarDashboard()
     {
 
-        $menu = DB::table('cms_menus')->whereRaw("cms_menus.id IN (select id_cms_menus from cms_menus_privileges where id_cms_privileges = '".self::myPrivilegeId()."')")->where('is_dashboard', 1)->where('is_active', 1)->first();
+        $myPrivilegeId = self::myPrivilegeId();
+        $menu = DB::table('cms_menus')
+            ->join('cms_menus_privileges', 'cms_menus.id', '=', 'cms_menus_privileges.id_cms_menus')
+            ->where('cms_menus_privileges.id_cms_privileges', $myPrivilegeId)
+            ->where('cms_menus.is_dashboard', 1)
+            ->where('cms_menus.is_active', 1)
+            ->select('cms_menus.*')
+            ->first();
 
         if (!$menu) {
             return null;
@@ -449,7 +460,16 @@ class CRUDBooster
 
     public static function sidebarMenu()
     {
-        $menu_active = DB::table('cms_menus')->whereRaw("cms_menus.id IN (select id_cms_menus from cms_menus_privileges where id_cms_privileges = '".self::myPrivilegeId()."')")->where('parent_id', 0)->where('is_active', 1)->where('is_dashboard', 0)->orderby('sorting', 'asc')->select('cms_menus.*')->get();
+        $myPrivilegeId = self::myPrivilegeId();
+        $menu_active = DB::table('cms_menus')
+            ->join('cms_menus_privileges', 'cms_menus.id', '=', 'cms_menus_privileges.id_cms_menus')
+            ->where('cms_menus_privileges.id_cms_privileges', $myPrivilegeId)
+            ->where('cms_menus.parent_id', 0)
+            ->where('cms_menus.is_active', 1)
+            ->where('cms_menus.is_dashboard', 0)
+            ->orderby('cms_menus.sorting', 'asc')
+            ->select('cms_menus.*')
+            ->get();
 
         foreach ($menu_active as &$menu) {
 
@@ -480,7 +500,16 @@ class CRUDBooster
             $menu->url = $url;
             $menu->url_path = trim(str_replace(url('/'), '', $url), "/");
 
-            $child = DB::table('cms_menus')->whereRaw("cms_menus.id IN (select id_cms_menus from cms_menus_privileges where id_cms_privileges = '".self::myPrivilegeId()."')")->where('is_dashboard', 0)->where('is_active', 1)->where('parent_id', $menu->id)->select('cms_menus.*')->orderby('sorting', 'asc')->get();
+            $myPrivilegeId = self::myPrivilegeId();
+            $child = DB::table('cms_menus')
+                ->join('cms_menus_privileges', 'cms_menus.id', '=', 'cms_menus_privileges.id_cms_menus')
+                ->where('cms_menus_privileges.id_cms_privileges', $myPrivilegeId)
+                ->where('cms_menus.is_dashboard', 0)
+                ->where('cms_menus.is_active', 1)
+                ->where('cms_menus.parent_id', $menu->id)
+                ->select('cms_menus.*')
+                ->orderby('cms_menus.sorting', 'asc')
+                ->get();
             if (count($child)) {
 
                 foreach ($child as &$c) {
@@ -611,7 +640,15 @@ class CRUDBooster
 
         try {
             //MySQL & SQL Server
-            $isNULL = DB::select(DB::raw("select IS_NULLABLE from INFORMATION_SCHEMA.COLUMNS where TABLE_NAME='$table' and COLUMN_NAME = '$field'"))[0]->IS_NULLABLE;
+            // Use parameter binding for database safety and PostgreSQL compatibility
+            $query = "SELECT IS_NULLABLE FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = ? AND COLUMN_NAME = ?";
+            $result = DB::select($query, [$table, $field]);
+
+            if (!empty($result)) {
+                $isNULL = $result[0]->IS_NULLABLE;
+            } else {
+                $isNULL = null;
+            }
             $isNULL = ($isNULL == 'YES') ? true : false;
             Cache::forever('field_isNull_'.$table.'_'.$field, $isNULL);
         } catch (\Exception $e) {
@@ -629,12 +666,18 @@ class CRUDBooster
         }
 
         $typedata = Cache::rememberForever('field_type_'.$table.'_'.$field, function () use ($table, $field) {
+            $typedata = null;
 
             try {
-                //MySQL & SQL Server
-                $typedata = DB::select(DB::raw("select DATA_TYPE from INFORMATION_SCHEMA.COLUMNS where TABLE_NAME='$table' and COLUMN_NAME = '$field'"))[0]->DATA_TYPE;
-            } catch (\Exception $e) {
+                // Use parameter binding for database safety and PostgreSQL compatibility
+                $query = "SELECT DATA_TYPE FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = ? AND COLUMN_NAME = ?";
+                $result = DB::select($query, [$table, $field]);
 
+                if (!empty($result)) {
+                    $typedata = $result[0]->DATA_TYPE;
+                }
+            } catch (\Exception $e) {
+                // Silently handle the error
             }
 
             if (! $typedata) {
@@ -1101,14 +1144,23 @@ class CRUDBooster
         if ($multiple_db) {
             try {
                 $multiple_db[] = config('crudbooster.MAIN_DB_DATABASE');
-                $query_table_schema = implode("','", $multiple_db);
-                $tables = DB::select("SELECT CONCAT(TABLE_SCHEMA,'.',TABLE_NAME) FROM INFORMATION_SCHEMA.Tables WHERE TABLE_TYPE = 'BASE TABLE' AND TABLE_SCHEMA != 'mysql' AND TABLE_SCHEMA != 'performance_schema' AND TABLE_SCHEMA != 'information_schema' AND TABLE_SCHEMA != 'phpmyadmin' AND TABLE_SCHEMA IN ('$query_table_schema')");
+                // Use parameter binding for PostgreSQL compatibility and SQL safety
+                $query = "SELECT CONCAT(TABLE_SCHEMA,'.',TABLE_NAME) FROM INFORMATION_SCHEMA.Tables
+                          WHERE TABLE_TYPE = 'BASE TABLE'
+                          AND TABLE_SCHEMA != 'mysql'
+                          AND TABLE_SCHEMA != 'performance_schema'
+                          AND TABLE_SCHEMA != 'information_schema'
+                          AND TABLE_SCHEMA != 'phpmyadmin'
+                          AND TABLE_SCHEMA IN (".implode(',', array_fill(0, count($multiple_db), '?')).")";
+                $tables = DB::select($query, $multiple_db);
             } catch (\Exception $e) {
                 $tables = [];
             }
         } else {
             try {
-                $tables = DB::select("SELECT TABLE_NAME FROM INFORMATION_SCHEMA.Tables WHERE TABLE_TYPE = 'BASE TABLE' AND TABLE_SCHEMA = '".$db_database."'");
+                // Use parameter binding for PostgreSQL compatibility and SQL safety
+                $query = "SELECT TABLE_NAME FROM INFORMATION_SCHEMA.Tables WHERE TABLE_TYPE = 'BASE TABLE' AND TABLE_SCHEMA = ?";
+                $tables = DB::select($query, [$db_database]);
             } catch (\Exception $e) {
                 $tables = [];
             }

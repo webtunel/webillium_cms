@@ -57,63 +57,36 @@ class PrivilegesController extends CBController
         // Use parent's getIndex method to get the standard data
         $result = parent::getIndex();
 
-        // If it's a PostgreSQL database, we need to modify the privileges data to avoid PDO::prepare error
+        // If it's a PostgreSQL database, use a different approach
         $driver = DB::connection()->getPdo()->getAttribute(\PDO::ATTR_DRIVER_NAME);
-        if ($driver === 'pgsql') {
-            // Override moduls data for each privilege to use proper SQL query format
-            foreach ($result['result'] as $privilege) {
-                $id = $privilege->id;
-
-                // Get modules with properly cast DB::raw expressions using bindings for proper type handling
-                $moduls = DB::table("cms_moduls")
-                    ->where('is_protected', 0)
-                    ->whereNull('deleted_at')
-                    ->select([
-                        "cms_moduls.*",
-                        // Use parameter binding with DB::raw to avoid issues with string literals
-                        DB::raw("COALESCE((select is_visible::integer from cms_privileges_roles where id_cms_moduls = cms_moduls.id and id_cms_privileges = ?), 0) as is_visible"),
-                        DB::raw("COALESCE((select is_create::integer from cms_privileges_roles where id_cms_moduls = cms_moduls.id and id_cms_privileges = ?), 0) as is_create"),
-                        DB::raw("COALESCE((select is_read::integer from cms_privileges_roles where id_cms_moduls = cms_moduls.id and id_cms_privileges = ?), 0) as is_read"),
-                        DB::raw("COALESCE((select is_edit::integer from cms_privileges_roles where id_cms_moduls = cms_moduls.id and id_cms_privileges = ?), 0) as is_edit"),
-                        DB::raw("COALESCE((select is_delete::integer from cms_privileges_roles where id_cms_moduls = cms_moduls.id and id_cms_privileges = ?), 0) as is_delete")
-                    ])
-                    ->addBinding($id, 'select')
-                    ->addBinding($id, 'select')
-                    ->addBinding($id, 'select')
-                    ->addBinding($id, 'select')
-                    ->addBinding($id, 'select')
-                    ->orderby("name", "asc")
-                    ->get();
-
-                // Store modules data per privilege
-                $privilege->moduls = $moduls;
+        foreach ($result['result'] as $privilege) {
+            $id = $privilege->id;
+            
+            // Get all modules
+            $moduls = DB::table("cms_moduls")
+                ->where('is_protected', 0)
+                ->whereNull('deleted_at')
+                ->select("cms_moduls.*")
+                ->orderby("name", "asc")
+                ->get();
+            
+            // For each module, get its permissions separately
+            foreach ($moduls as $module) {
+                $permission = DB::table('cms_privileges_roles')
+                    ->where('id_cms_moduls', $module->id)
+                    ->where('id_cms_privileges', $id)
+                    ->first();
+                
+                // Set permission values (or defaults if none)
+                $module->is_visible = ($permission && isset($permission->is_visible)) ? (int)$permission->is_visible : 0;
+                $module->is_create = ($permission && isset($permission->is_create)) ? (int)$permission->is_create : 0;
+                $module->is_read = ($permission && isset($permission->is_read)) ? (int)$permission->is_read : 0;
+                $module->is_edit = ($permission && isset($permission->is_edit)) ? (int)$permission->is_edit : 0;
+                $module->is_delete = ($permission && isset($permission->is_delete)) ? (int)$permission->is_delete : 0;
             }
-        } else {
-            // For MySQL and other drivers, get modules data normally
-            foreach ($result['result'] as $privilege) {
-                $id = $privilege->id;
-
-                $moduls = DB::table("cms_moduls")
-                    ->where('is_protected', 0)
-                    ->whereNull('deleted_at')
-                    ->select([
-                        "cms_moduls.*",
-                        DB::raw("(select is_visible from cms_privileges_roles where id_cms_moduls = cms_moduls.id and id_cms_privileges = ?) as is_visible"),
-                        DB::raw("(select is_create from cms_privileges_roles where id_cms_moduls = cms_moduls.id and id_cms_privileges = ?) as is_create"),
-                        DB::raw("(select is_read from cms_privileges_roles where id_cms_moduls = cms_moduls.id and id_cms_privileges = ?) as is_read"),
-                        DB::raw("(select is_edit from cms_privileges_roles where id_cms_moduls = cms_moduls.id and id_cms_privileges = ?) as is_edit"),
-                        DB::raw("(select is_delete from cms_privileges_roles where id_cms_moduls = cms_moduls.id and id_cms_privileges = ?) as is_delete")
-                    ])
-                    ->addBinding($id, 'select')
-                    ->addBinding($id, 'select')
-                    ->addBinding($id, 'select')
-                    ->addBinding($id, 'select')
-                    ->addBinding($id, 'select')
-                    ->orderby("name", "asc")
-                    ->get();
-
-                $privilege->moduls = $moduls;
-            }
+            
+            // Store modules data per privilege
+            $privilege->moduls = $moduls;
         }
 
         return $result;
@@ -131,48 +104,27 @@ class PrivilegesController extends CBController
         $id = 0;
         $data['page_title'] = "Add Data";
 
-        // Handle PostgreSQL differently
-        $driver = DB::connection()->getPdo()->getAttribute(\PDO::ATTR_DRIVER_NAME);
-        if ($driver === 'pgsql') {
-            $data['moduls'] = DB::table("cms_moduls")
-                ->where('is_protected', 0)
-                ->whereNull('deleted_at')
-                ->select([
-                    "cms_moduls.*",
-                    // Use parameter binding with DB::raw to avoid issues with string literals
-                    DB::raw("COALESCE((select is_visible::integer from cms_privileges_roles where id_cms_moduls = cms_moduls.id and id_cms_privileges = ?), 0) as is_visible"),
-                    DB::raw("COALESCE((select is_create::integer from cms_privileges_roles where id_cms_moduls = cms_moduls.id and id_cms_privileges = ?), 0) as is_create"),
-                    DB::raw("COALESCE((select is_read::integer from cms_privileges_roles where id_cms_moduls = cms_moduls.id and id_cms_privileges = ?), 0) as is_read"),
-                    DB::raw("COALESCE((select is_edit::integer from cms_privileges_roles where id_cms_moduls = cms_moduls.id and id_cms_privileges = ?), 0) as is_edit"),
-                    DB::raw("COALESCE((select is_delete::integer from cms_privileges_roles where id_cms_moduls = cms_moduls.id and id_cms_privileges = ?), 0) as is_delete")
-                ])
-                ->addBinding($id, 'select')
-                ->addBinding($id, 'select')
-                ->addBinding($id, 'select')
-                ->addBinding($id, 'select')
-                ->addBinding($id, 'select')
-                ->orderby("name", "asc")
-                ->get();
-        } else {
-            // For MySQL and other drivers
-            $data['moduls'] = DB::table("cms_moduls")
-                ->where('is_protected', 0)
-                ->whereNull('deleted_at')
-                ->select([
-                    "cms_moduls.*",
-                    DB::raw("(select is_visible from cms_privileges_roles where id_cms_moduls = cms_moduls.id and id_cms_privileges = ?) as is_visible"),
-                    DB::raw("(select is_create from cms_privileges_roles where id_cms_moduls = cms_moduls.id and id_cms_privileges = ?) as is_create"),
-                    DB::raw("(select is_read from cms_privileges_roles where id_cms_moduls = cms_moduls.id and id_cms_privileges = ?) as is_read"),
-                    DB::raw("(select is_edit from cms_privileges_roles where id_cms_moduls = cms_moduls.id and id_cms_privileges = ?) as is_edit"),
-                    DB::raw("(select is_delete from cms_privileges_roles where id_cms_moduls = cms_moduls.id and id_cms_privileges = ?) as is_delete")
-                ])
-                ->addBinding($id, 'select')
-                ->addBinding($id, 'select')
-                ->addBinding($id, 'select')
-                ->addBinding($id, 'select')
-                ->addBinding($id, 'select')
-                ->orderby("name", "asc")
-                ->get();
+        // Get all modules
+        $data['moduls'] = DB::table("cms_moduls")
+            ->where('is_protected', 0)
+            ->whereNull('deleted_at')
+            ->select("cms_moduls.*")
+            ->orderby("name", "asc")
+            ->get();
+                
+        // For each module, initialize permissions
+        foreach ($data['moduls'] as $module) {
+            $permission = DB::table('cms_privileges_roles')
+                ->where('id_cms_moduls', $module->id)
+                ->where('id_cms_privileges', $id)
+                ->first();
+            
+            // Set permission values (or defaults if none)
+            $module->is_visible = ($permission && isset($permission->is_visible)) ? (int)$permission->is_visible : 0;
+            $module->is_create = ($permission && isset($permission->is_create)) ? (int)$permission->is_create : 0;
+            $module->is_read = ($permission && isset($permission->is_read)) ? (int)$permission->is_read : 0;
+            $module->is_edit = ($permission && isset($permission->is_edit)) ? (int)$permission->is_edit : 0;
+            $module->is_delete = ($permission && isset($permission->is_delete)) ? (int)$permission->is_delete : 0;
         }
 
         $data['page_menu'] = Route::getCurrentRoute()->getActionName();
@@ -239,48 +191,27 @@ class PrivilegesController extends CBController
 
         $page_title = cbLang('edit_data_page_title', ['module' => 'Privilege', 'name' => $row->name]);
 
-        // Handle PostgreSQL differently
-        $driver = DB::connection()->getPdo()->getAttribute(\PDO::ATTR_DRIVER_NAME);
-        if ($driver === 'pgsql') {
-            $moduls = DB::table("cms_moduls")
-                ->where('is_protected', 0)
-                ->whereNull('deleted_at')
-                ->select([
-                    "cms_moduls.*",
-                    // Use parameter binding with DB::raw to avoid issues with string literals
-                    DB::raw("COALESCE((select is_visible::integer from cms_privileges_roles where id_cms_moduls = cms_moduls.id and id_cms_privileges = ?), 0) as is_visible"),
-                    DB::raw("COALESCE((select is_create::integer from cms_privileges_roles where id_cms_moduls = cms_moduls.id and id_cms_privileges = ?), 0) as is_create"),
-                    DB::raw("COALESCE((select is_read::integer from cms_privileges_roles where id_cms_moduls = cms_moduls.id and id_cms_privileges = ?), 0) as is_read"),
-                    DB::raw("COALESCE((select is_edit::integer from cms_privileges_roles where id_cms_moduls = cms_moduls.id and id_cms_privileges = ?), 0) as is_edit"),
-                    DB::raw("COALESCE((select is_delete::integer from cms_privileges_roles where id_cms_moduls = cms_moduls.id and id_cms_privileges = ?), 0) as is_delete")
-                ])
-                ->addBinding($id, 'select')
-                ->addBinding($id, 'select')
-                ->addBinding($id, 'select')
-                ->addBinding($id, 'select')
-                ->addBinding($id, 'select')
-                ->orderby("name", "asc")
-                ->get();
-        } else {
-            // For MySQL and other drivers
-            $moduls = DB::table("cms_moduls")
-                ->where('is_protected', 0)
-                ->whereNull('deleted_at')
-                ->select([
-                    "cms_moduls.*",
-                    DB::raw("(select is_visible from cms_privileges_roles where id_cms_moduls = cms_moduls.id and id_cms_privileges = ?) as is_visible"),
-                    DB::raw("(select is_create from cms_privileges_roles where id_cms_moduls = cms_moduls.id and id_cms_privileges = ?) as is_create"),
-                    DB::raw("(select is_read from cms_privileges_roles where id_cms_moduls = cms_moduls.id and id_cms_privileges = ?) as is_read"),
-                    DB::raw("(select is_edit from cms_privileges_roles where id_cms_moduls = cms_moduls.id and id_cms_privileges = ?) as is_edit"),
-                    DB::raw("(select is_delete from cms_privileges_roles where id_cms_moduls = cms_moduls.id and id_cms_privileges = ?) as is_delete")
-                ])
-                ->addBinding($id, 'select')
-                ->addBinding($id, 'select')
-                ->addBinding($id, 'select')
-                ->addBinding($id, 'select')
-                ->addBinding($id, 'select')
-                ->orderby("name", "asc")
-                ->get();
+        // Get all modules
+        $moduls = DB::table("cms_moduls")
+            ->where('is_protected', 0)
+            ->whereNull('deleted_at')
+            ->select("cms_moduls.*")
+            ->orderby("name", "asc")
+            ->get();
+                
+        // For each module, get its permissions
+        foreach ($moduls as $module) {
+            $permission = DB::table('cms_privileges_roles')
+                ->where('id_cms_moduls', $module->id)
+                ->where('id_cms_privileges', $id)
+                ->first();
+            
+            // Set permission values (or defaults if none)
+            $module->is_visible = ($permission && isset($permission->is_visible)) ? (int)$permission->is_visible : 0;
+            $module->is_create = ($permission && isset($permission->is_create)) ? (int)$permission->is_create : 0;
+            $module->is_read = ($permission && isset($permission->is_read)) ? (int)$permission->is_read : 0;
+            $module->is_edit = ($permission && isset($permission->is_edit)) ? (int)$permission->is_edit : 0;
+            $module->is_delete = ($permission && isset($permission->is_delete)) ? (int)$permission->is_delete : 0;
         }
 
         $page_menu = Route::getCurrentRoute()->getActionName();

@@ -1,4 +1,4 @@
-<?php namespace crocodicstudio\crudbooster\controllers;
+<?php namespace webtunel\webilliumcms\controllers;
 
 use File;
 use Image;

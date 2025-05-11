@@ -1,5 +1,5 @@
 <?php
 
-use crocodicstudio\crudbooster\helpers\CBRouter;
+use webtunel\webilliumcms\helpers\CBRouter;
 
 CBRouter::route();

@@ -1,4 +1,4 @@
-<?php namespace crocodicstudio\crudbooster\controllers;
+<?php namespace webtunel\webilliumcms\controllers;
 
 use CRUDBooster;
 use Illuminate\Support\Facades\Cache;
@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\Excel;
 use Illuminate\Support\Facades\PDF;
 use Illuminate\Support\Facades\Request;
 use Illuminate\Support\Facades\Session;
-use crocodicstudio\crudbooster\fonts\Fontawesome;
+use webtunel\webilliumcms\fonts\Fontawesome;
 
 class MenusController extends CBController
 {

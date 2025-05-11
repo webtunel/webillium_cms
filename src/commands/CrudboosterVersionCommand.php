@@ -1,4 +1,4 @@
-<?php namespace crocodicstudio\crudbooster\commands;
+<?php namespace webtunel\webilliumcms\commands;
 
 use App;
 use Illuminate\Console\Command;

@@ -1,7 +1,7 @@
-<?php namespace crocodicstudio\crudbooster\commands;
+<?php namespace webtunel\webilliumcms\commands;
 
 use Cache;
-use crocodicstudio\crudbooster\helpers\CRUDBooster;
+use webtunel\webilliumcms\helpers\CRUDBooster;
 use DB;
 use Illuminate\Console\Command;
 use Request;

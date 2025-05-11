@@ -4,7 +4,7 @@ use Session;
 use Request;
 use DB;
 use CRUDbooster;
-use crocodicstudio\crudbooster\controllers\CBController;
+use webtunel\webilliumcms\controllers\CBController;
 
 class AdminCmsUsersController extends CBController {
 

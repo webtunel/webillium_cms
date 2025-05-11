@@ -1,6 +1,6 @@
 <?php
 
-namespace crocodicstudio\crudbooster\controllers;
+namespace webtunel\webilliumcms\controllers;
 
 // use Illuminate\Foundation\Bus\DispatchesJobs;
 use Illuminate\Routing\Controller as BaseController;

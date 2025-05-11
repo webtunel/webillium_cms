@@ -1,9 +1,9 @@
 <?php
 
-namespace crocodicstudio\crudbooster\middlewares;
+namespace webtunel\webilliumcms\middlewares;
 
 use Closure;
-use crocodicstudio\crudbooster\helpers\CRUDBooster;
+use webtunel\webilliumcms\helpers\CRUDBooster;
 
 class CBAuthAPI
 {

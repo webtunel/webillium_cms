@@ -105,7 +105,7 @@ if(!function_exists('get_setting')) {
      * @return bool
      */
     function get_setting($key, $default = null) {
-        $setting = \crocodicstudio\crudbooster\helpers\CB::getSetting($key);
+        $setting = \webtunel\webilliumcms\helpers\CB::getSetting($key);
         $setting = ($setting)?:$default;
         return $setting;
     }

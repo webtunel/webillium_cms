@@ -733,7 +733,7 @@ class CRUDBooster
         $cc_email = $queue->email_cc_email;
         $attachments = unserialize($queue->email_attachments);
 
-        \Mail::send("crudbooster::emails.blank", ['content' => $html], function ($message) use (
+        \Illuminate\Support\Facades\Mail::send("crudbooster::emails.blank", ['content' => $html], function ($message) use (
             $html,
             $to,
             $subject,
@@ -745,9 +745,12 @@ class CRUDBooster
             $message->priority(1);
             $message->to($to);
             $message->from($from_email, $from_name);
-            $message->cc($cc_email);
 
-            if (count($attachments)) {
+            if ($cc_email) {
+                $message->cc($cc_email);
+            }
+
+            if (is_array($attachments) && count($attachments)) {
                 foreach ($attachments as $attachment) {
                     $message->attach($attachment);
                 }
@@ -795,7 +798,7 @@ class CRUDBooster
             return true;
         }
 
-        \Mail::send("crudbooster::emails.blank", ['content' => $html], function ($message) use ($to, $subject, $template, $attachments) {
+        \Illuminate\Support\Facades\Mail::send("crudbooster::emails.blank", ['content' => $html], function ($message) use ($to, $subject, $template, $attachments) {
             $message->priority(1);
             $message->to($to);
 
@@ -808,7 +811,7 @@ class CRUDBooster
                 $message->cc($template->cc_email);
             }
 
-            if (count($attachments)) {
+            if (is_array($attachments) && count($attachments)) {
                 foreach ($attachments as $attachment) {
                     $message->attach($attachment);
                 }

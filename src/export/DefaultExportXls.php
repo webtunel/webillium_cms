@@ -1,7 +1,7 @@
 <?php
 
 
-namespace crocodicstudio\crudbooster\export;
+namespace webtunel\webilliumcms\export;
 
 
 use Illuminate\Contracts\View\View;

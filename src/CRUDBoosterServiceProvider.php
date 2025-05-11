@@ -70,11 +70,11 @@ class CRUDBoosterServiceProvider extends ServiceProvider
         }
 
         $loader = AliasLoader::getInstance();
-        $loader->alias('PDF', 'Barryvdh\DomPDF\Facade\Pdf');
-        $loader->alias('Excel', 'Maatwebsite\Excel\Facades\Excel');
-        $loader->alias('Image', 'Intervention\Image\ImageManagerStatic');
-        $loader->alias('CRUDBooster', 'webtunel\webilliumcms\helpers\CRUDBooster');
-        $loader->alias('CB', 'webtunel\webilliumcms\helpers\CB');
+        $loader->alias('PDF', \Barryvdh\DomPDF\Facade\Pdf::class);
+        $loader->alias('Excel', \Maatwebsite\Excel\Facades\Excel::class);
+        $loader->alias('Image', \Intervention\Image\Facades\Image::class);
+        $loader->alias('CRUDBooster', \webtunel\webilliumcms\helpers\CRUDBooster::class);
+        $loader->alias('CB', \webtunel\webilliumcms\helpers\CB::class);
     }
    
     private function registerSingleton()

@@ -45,6 +45,11 @@ class WebilliumQuickInstallCommand extends Command
             $this->error('Laravel version must be at least 8.0. Your version is ' . $laravel::VERSION);
             return;
         }
+
+        // Display notice for Laravel 10.x compatibility
+        if (version_compare($laravel::VERSION, '10.0', '>=')) {
+            $this->info('✓ Laravel 10.x detected - using optimized dependencies');
+        }
         
         // Check database configuration
         if (!$this->checkDatabaseConnection()) {

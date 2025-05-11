@@ -1,7 +1,7 @@
 # 🚀 Webillium CMS - Modern Laravel Admin Generator
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/webtunel/webillium_cms/v5.6/src/assets/logo_crudbooster.png" alt="Webillium CMS Logo" width="300">
+  <img src="https://raw.githubusercontent.com/webtunel/webillium_cms/v5.6/src/assets/images/webillium_logo.png" alt="Webillium CMS Logo" width="300">
 </p>
 
 <p align="center">
@@ -25,10 +25,6 @@ Webillium CMS transforms the way you build web applications by:
 - **Reducing Code**: Minimize boilerplate with powerful generators and ready-to-use components
 - **Modern UI**: Beautiful, responsive admin interface built with Stisla
 - **Laravel 10.x Ready**: Fully compatible with the latest Laravel versions
-
-<p align="center">
-  <img src="https://example.com/screenshot.png" alt="Admin Screenshot" width="600">
-</p>
 
 ## 🔥 Key Features
 

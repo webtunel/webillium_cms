@@ -493,9 +493,10 @@ $total = $result->total();
             <div class="modal-dialog  modal-dialog-centered">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <button class="close" aria-label="Close" type="button" data-dismiss="modal">
-                            <span aria-hidden="true">×</span></button>
-                        <h4 class="modal-title"><i class='fa fa-download'></i> {{cbLang("export_dialog_title")}}</h4>
+                        <h5 class="modal-title"><i class='fa fa-download'></i> {{cbLang("export_dialog_title")}}</h5>
+                        <button type="button" class="close" aria-label="Close" data-dismiss="modal">
+                            <span aria-hidden="true">×</span>
+                        </button>
                     </div>
 
                     <form method='post' target="_blank" action='{{ CRUDBooster::mainpath("export-data?t=".time()) }}'>

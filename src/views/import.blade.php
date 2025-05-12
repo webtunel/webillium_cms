@@ -1,6 +1,15 @@
 @extends('crudbooster::admin_template')
 @section('content')
 
+    @php
+        // Define missing variables with default values
+        $button_show_data = $button_show_data ?? false;
+        $button_reload_data = $button_reload_data ?? false;
+        $button_new_data = $button_new_data ?? false;
+        $button_delete_data = $button_delete_data ?? false;
+        $index_button = $index_button ?? [];
+        $columns = $columns ?? [];
+    @endphp
 
     @if($button_show_data || $button_reload_data || $button_new_data || $button_delete_data || $index_button || $columns)
         <div id='box-actionmenu' class='box'>

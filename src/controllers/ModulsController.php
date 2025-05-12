@@ -10,6 +10,29 @@ use webtunel\webilliumcms\fonts\Fontawesome;
 
 class ModulsController extends CBController
 {
+    /**
+     * Maintenance route to fix button settings in all modules
+     */
+    public function getFixButtons()
+    {
+        $this->cbLoader();
+
+        // Check if user is super admin
+        if (!CRUDBooster::isSuperadmin()) {
+            CRUDBooster::redirect(CRUDBooster::adminPath(), cbLang('denied_access'));
+        }
+
+        $modules = DB::table('cms_moduls')->whereNotNull('controller')->get();
+        $count = 0;
+
+        foreach ($modules as $module) {
+            if ($this->fixModuleControllerButtons($module->controller)) {
+                $count++;
+            }
+        }
+
+        return redirect()->back()->with(['message' => "Fixed button settings for $count modules", 'message_type' => 'success']);
+    }
     public function cbInit()
     {
         $this->table = 'cms_moduls';
@@ -560,6 +583,50 @@ class ModulsController extends CBController
         }
     }
 
+    /**
+     * Fix module controller button settings
+     * @param string $controller The controller class name
+     * @return bool
+     */
+    private function fixModuleControllerButtons($controller)
+    {
+        $controller_path = app_path('Http/Controllers/'.$controller.'.php');
+
+        if (!file_exists($controller_path)) {
+            \Log::warning("Controller file not found: $controller_path");
+            return false;
+        }
+
+        $content = file_get_contents($controller_path);
+
+        // Make sure button_add is set to TRUE
+        $content = preg_replace('/\$this->button_add\s*=\s*(.*?);/', '$this->button_add = TRUE;', $content);
+
+        // Make sure button_table_action is set to TRUE
+        $content = preg_replace('/\$this->button_table_action\s*=\s*(.*?);/', '$this->button_table_action = TRUE;', $content);
+
+        // Make sure button_edit is set to TRUE
+        $content = preg_replace('/\$this->button_edit\s*=\s*(.*?);/', '$this->button_edit = TRUE;', $content);
+
+        // Make sure button_delete is set to TRUE
+        $content = preg_replace('/\$this->button_delete\s*=\s*(.*?);/', '$this->button_delete = TRUE;', $content);
+
+        // Make sure button_detail is set to TRUE
+        $content = preg_replace('/\$this->button_detail\s*=\s*(.*?);/', '$this->button_detail = TRUE;', $content);
+
+        // Make sure button_show is set to TRUE
+        $content = preg_replace('/\$this->button_show\s*=\s*(.*?);/', '$this->button_show = TRUE;', $content);
+
+        // Make sure button action style is set
+        $content = preg_replace('/\$this->button_action_style\s*=\s*(.*?);/', '$this->button_action_style = "button_icon";', $content);
+
+        // Save the updated content
+        file_put_contents($controller_path, $content);
+
+        \Log::info("Fixed button settings in controller: $controller");
+        return true;
+    }
+
     public function postStep2()
     {
         $this->cbLoader();
@@ -585,6 +652,12 @@ class ModulsController extends CBController
             $created_at = now();
 
             $controller = CRUDBooster::generateController($table_name, $path);
+
+            // Fix button settings in the controller
+            if ($controller) {
+                $this->fixModuleControllerButtons($controller);
+            }
+
             $id = DB::table($this->table)->insertGetId(compact("controller", "name", "table_name", "icon", "path", "created_at"));
 
             //Insert Menu

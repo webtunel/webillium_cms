@@ -585,7 +585,7 @@ class CBController extends Controller
 
                 if (isset($col['str_limit']) && $col['str_limit']) {
                     $value = trim(strip_tags($value));
-                    $value = str_limit($value, $col['str_limit']);
+                    $value = \Illuminate\Support\Str::limit($value, $col['str_limit']);
                 }
 
                 if (isset($col['nl2br']) && $col['nl2br']) {

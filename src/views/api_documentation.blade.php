@@ -23,6 +23,7 @@
                     <li class="btn btn-outline-primary nav-item"><a style="color:{{$mainColor}}" href="{{ CRUDBooster::mainpath('documentation') }}"><i class='fa fa-file'></i> API Documentation </a></li>
                     <li class="btn btn-outline-primary nav-item"><a style="color:{{$mainColor}}" href="{{ CRUDBooster::mainpath('screet-key') }}"><i class='fa fa-key'></i> API Screet Key </a></li>
                     <li class="btn btn-outline-primary nav-item"><a style="color:{{$mainColor}}" href="{{ CRUDBooster::mainpath('generator') }}"><i class='fa fa-cog'></i> API Generator </a></li>
+                    <li class="btn btn-outline-primary nav-item"><a style="color:{{$mainColor}}" href="{{ CRUDBooster::mainpath('jwt-auth') }}"><i class='fa fa-lock'></i> JWT Authentication </a></li>
                 </ul>
             </div>
         </div>

@@ -123,6 +123,72 @@ class ApiCustomController extends CBController
         return view('crudbooster::api_key', $data);
     }
 
+    public function getJwtAuth()
+    {
+        $this->cbLoader();
+
+        if (! CRUDBooster::isSuperadmin()) {
+            CRUDBooster::insertLog(cbLang("log_try_view", ['name' => 'JWT Authentication', 'module' => 'API']));
+            CRUDBooster::redirect(CRUDBooster::adminPath(), cbLang('denied_access'));
+        }
+
+        $data['page_title'] = 'JWT Authentication';
+        $data['page_menu'] = Route::getCurrentRoute()->getActionName();
+
+        return view('crudbooster::api_jwt_auth', $data);
+    }
+
+    public function postSaveJwtConfig()
+    {
+        $this->cbLoader();
+
+        if (! CRUDBooster::isSuperadmin()) {
+            CRUDBooster::insertLog(cbLang("log_try_view", ['name' => 'JWT Authentication Config', 'module' => 'API']));
+            CRUDBooster::redirect(CRUDBooster::adminPath(), cbLang('denied_access'));
+        }
+
+        $jwt_secret = Request::input('jwt_secret');
+        $jwt_ttl = Request::input('jwt_ttl');
+        $jwt_refresh_ttl = Request::input('jwt_refresh_ttl');
+        $jwt_verify_ip = Request::input('jwt_verify_ip') ? 'true' : 'false';
+        $jwt_verify_user_agent = Request::input('jwt_verify_user_agent') ? 'true' : 'false';
+
+        // Update .env file with new values
+        $this->updateEnvFile([
+            'JWT_SECRET' => $jwt_secret,
+            'JWT_TTL' => $jwt_ttl,
+            'JWT_REFRESH_TTL' => $jwt_refresh_ttl,
+            'JWT_VERIFY_IP' => $jwt_verify_ip,
+            'JWT_VERIFY_USER_AGENT' => $jwt_verify_user_agent
+        ]);
+
+        CRUDBooster::redirect(CRUDBooster::mainpath('jwt-auth'), 'JWT configuration has been updated successfully', 'success');
+    }
+
+    private function updateEnvFile($data)
+    {
+        if (empty($data) || !is_array($data)) {
+            return false;
+        }
+
+        $envPath = app()->environmentFilePath();
+        $envContents = file_get_contents($envPath);
+
+        foreach ($data as $key => $value) {
+            // Check if the key exists in the .env file
+            if (strpos($envContents, "{$key}=") !== false) {
+                // Replace existing key-value pair
+                $envContents = preg_replace("/{$key}=.*/", "{$key}={$value}", $envContents);
+            } else {
+                // Add new key-value pair at the end of the file
+                $envContents .= "\n{$key}={$value}";
+            }
+        }
+
+        file_put_contents($envPath, $envContents);
+        return true;
+    }
+
     public function getGenerator()
     {
         $this->cbLoader();

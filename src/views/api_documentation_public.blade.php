@@ -30,6 +30,27 @@
                     color: #db0e00;
                     font-family: arial;
                 }
+                .nav-tabs-custom>.nav-tabs>li.active {
+                    border-top-color: #3c8dbc;
+                }
+                .nav-tabs-custom>.nav-tabs>li.active>a {
+                    border-top-color: transparent;
+                    border-left-color: #f4f4f4;
+                    border-right-color: #f4f4f4;
+                }
+                pre {
+                    display: block;
+                    padding: 9.5px;
+                    margin: 0 0 10px;
+                    font-size: 13px;
+                    line-height: 1.42857143;
+                    color: #333;
+                    word-break: break-all;
+                    word-wrap: break-word;
+                    background-color: #f5f5f5;
+                    border: 1px solid #ccc;
+                    border-radius: 4px;
+                }
             </style>
 
             <script>
@@ -46,6 +67,16 @@
                     })
                 })
             </script>
+
+            <!-- Nav tabs -->
+            <ul class="nav nav-tabs" role="tablist">
+                <li role="presentation" class="active"><a href="#apilist" aria-controls="apilist" role="tab" data-toggle="tab">API List</a></li>
+                <li role="presentation"><a href="#jwt" aria-controls="jwt" role="tab" data-toggle="tab">JWT Authentication</a></li>
+            </ul>
+
+            <!-- Tab panes -->
+            <div class="tab-content">
+                <div role="tabpanel" class="tab-pane active" id="apilist">
 
             <div class='form-group'>
                 <label>API BASE URL</label>
@@ -317,6 +348,155 @@
                 </tbody>
             </table>
 
+                </div><!-- End API List tab panel -->
+
+                <div role="tabpanel" class="tab-pane" id="jwt">
+                    <div class="box-body">
+                        <h3>JWT Authentication</h3>
+                        <p>This API uses JWT (JSON Web Token) for authentication. JWT provides a secure way to authenticate API users without storing session data on the server.</p>
+
+                        <h4>Authentication Endpoints</h4>
+                        <div class="table-responsive">
+                            <table class='table table-striped table-bordered'>
+                                <thead>
+                                    <tr>
+                                        <th>Endpoint</th>
+                                        <th>Method</th>
+                                        <th>Description</th>
+                                        <th>Parameters</th>
+                                        <th>Response</th>
+                                        <th>Auth Required</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td><code>/api/jwt/login</code></td>
+                                        <td>POST</td>
+                                        <td>Login with email and password to get a JWT token</td>
+                                        <td>
+                                            <ul>
+                                                <li><code>email</code> (required): User's email</li>
+                                                <li><code>password</code> (required): User's password</li>
+                                            </ul>
+                                        </td>
+                                        <td>
+                                            <pre>{
+  "api_status": 1,
+  "api_message": "Login successful",
+  "data": {
+    "access_token": "eyJhbGciOiJIUzI1...",
+    "token_type": "Bearer",
+    "expires_in": 86400,
+    "user": {
+      "id": 1,
+      "name": "Admin",
+      "email": "admin@example.com",
+      "photo": "..."
+    }
+  }
+}</pre>
+                                        </td>
+                                        <td>No</td>
+                                    </tr>
+                                    <tr>
+                                        <td><code>/api/jwt/refresh</code></td>
+                                        <td>POST</td>
+                                        <td>Refresh an existing token before it expires</td>
+                                        <td>
+                                            <ul>
+                                                <li>Requires Authorization header with Bearer token</li>
+                                            </ul>
+                                        </td>
+                                        <td>
+                                            <pre>{
+  "api_status": 1,
+  "api_message": "Token refreshed successfully",
+  "data": {
+    "access_token": "eyJhbGciOiJIUzI1...",
+    "token_type": "Bearer",
+    "expires_in": 86400
+  }
+}</pre>
+                                        </td>
+                                        <td>Yes</td>
+                                    </tr>
+                                    <tr>
+                                        <td><code>/api/jwt/me</code></td>
+                                        <td>GET</td>
+                                        <td>Get the current user's profile details</td>
+                                        <td>
+                                            <ul>
+                                                <li>Requires Authorization header with Bearer token</li>
+                                            </ul>
+                                        </td>
+                                        <td>
+                                            <pre>{
+  "api_status": 1,
+  "api_message": "Success",
+  "data": {
+    "user": {
+      "id": 1,
+      "name": "Admin",
+      "email": "admin@example.com",
+      "photo": "...",
+      "privileges": {
+        "role": "Superadmin",
+        "modules": {...}
+      }
+    }
+  }
+}</pre>
+                                        </td>
+                                        <td>Yes</td>
+                                    </tr>
+                                    <tr>
+                                        <td><code>/api/jwt/logout</code></td>
+                                        <td>POST</td>
+                                        <td>Invalidate the current token</td>
+                                        <td>
+                                            <ul>
+                                                <li>Requires Authorization header with Bearer token</li>
+                                            </ul>
+                                        </td>
+                                        <td>
+                                            <pre>{
+  "api_status": 1,
+  "api_message": "Successfully logged out"
+}</pre>
+                                        </td>
+                                        <td>Yes</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <h4>How to Use JWT Authentication</h4>
+                        <ol>
+                            <li>Call <code>/api/jwt/login</code> with email and password to get a token</li>
+                            <li>Include the token in subsequent API requests in the Authorization header</li>
+                            <li>Use <code>/api/jwt/refresh</code> before the token expires to get a new token</li>
+                            <li>Call <code>/api/jwt/logout</code> to invalidate the token when done</li>
+                        </ol>
+
+                        <h4>Example: Login Request</h4>
+                        <pre>POST /api/jwt/login HTTP/1.1
+Host: {{request()->getHost()}}
+Content-Type: application/json
+
+{
+  "email": "user@example.com",
+  "password": "your_password"
+}</pre>
+
+                        <h4>Example: Making an authenticated request</h4>
+                        <pre>GET /api/some-endpoint HTTP/1.1
+Host: {{request()->getHost()}}
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+Content-Type: application/json</pre>
+                    </div>
+                </div><!-- End JWT tab panel -->
+
+            </div><!-- End tab content -->
 
         </div><!--END BODY-->
     </div><!--END BOX-->

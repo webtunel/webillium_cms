@@ -9,6 +9,7 @@
         $button_delete_data = $button_delete_data ?? false;
         $index_button = $index_button ?? [];
         $columns = $columns ?? [];
+        $data_sub_module = $data_sub_module ?? null;
     @endphp
 
     @if($button_show_data || $button_reload_data || $button_new_data || $button_delete_data || $index_button || $columns)

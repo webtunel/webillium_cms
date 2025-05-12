@@ -900,13 +900,14 @@ class CBController extends Controller
                 continue;
             }
 
-            if ($di['type'] == 'money') {
+            if (isset($di['type']) && $di['type'] == 'money') {
                 $request_all[$name] = preg_replace('/[^\d-]+/', '', $request_all[$name]);
             }
 
-            if ($di['type'] == 'child') {
+            if (isset($di['type']) && $di['type'] == 'child') {
                 $slug_name = str_slug($di['label'], '');
-                foreach ($di['columns'] as $child_col) {
+                if(isset($di['columns'])) {
+                    foreach ($di['columns'] as $child_col) {
                     if (isset($child_col['validation'])) {
                         //https://laracasts.com/discuss/channels/general-discussion/array-validation-is-not-working/
                         if (strpos($child_col['validation'], 'required') !== false) {
@@ -917,10 +918,11 @@ class CBController extends Controller
 
                         $array_input[$slug_name.'-'.$child_col['name'].'.*'] = $child_col['validation'];
                     }
+                    }
                 }
             }
 
-            if (@$di['validation']) {
+            if (isset($di['validation'])) {
 
                 $exp = explode('|', $di['validation']);
                 if ($exp && count($exp)) {
@@ -1308,7 +1310,7 @@ class CBController extends Controller
 
             //Insert Data Checkbox if Type Datatable
             if (isset($ro['type']) && $ro['type'] == 'checkbox') {
-                if ($ro['relationship_table']) {
+                if (isset($ro['relationship_table']) && $ro['relationship_table']) {
                     $datatable = explode(",", $ro['datatable'])[0];
 
                     $foreignKey2 = CRUDBooster::getForeignKey($datatable, $ro['relationship_table']);
@@ -1329,7 +1331,7 @@ class CBController extends Controller
             }
 
             if (isset($ro['type']) && $ro['type'] == 'select2') {
-                if ($ro['relationship_table'] && $ro["datatable_orig"] == "") {
+                if (isset($ro['relationship_table']) && $ro['relationship_table'] && isset($ro["datatable_orig"]) && $ro["datatable_orig"] == "") {
                     $datatable = explode(",", $ro['datatable'])[0];
 
                     $foreignKey2 = CRUDBooster::getForeignKey($datatable, $ro['relationship_table']);
@@ -1347,44 +1349,53 @@ class CBController extends Controller
                         }
                     }
                 }
-                if ($ro['relationship_table'] && $ro["datatable_orig"] != "") {
+                if (isset($ro['relationship_table']) && $ro['relationship_table'] && isset($ro["datatable_orig"]) && $ro["datatable_orig"] != "") {
                     $params = explode("|", $ro['datatable_orig']);
                     if(!isset($params[2])) $params[2] = "id";
-                    DB::table($params[0])->where($params[2], $id)->update([$params[1] => implode(",",$inputdata)]);
+                    if($inputdata && is_array($inputdata)) {
+                        DB::table($params[0])->where($params[2], $id)->update([$params[1] => implode(",",$inputdata)]);
+                    }
                 }
             }
 
             if (isset($ro['type']) && $ro['type'] == 'child') {
                 $name = str_slug($ro['label'], '');
-                $columns = $ro['columns'];
-                $getColName = request($name.'-'.$columns[0]['name']);
-                $count_input_data = ($getColName)?(count($getColName) - 1):0;
-                $child_array = [];
-                $childtable = CRUDBooster::parseSqlTable($ro['table'])['table'];
-                $fk = $ro['foreign_key'];
+                if (isset($ro['columns'])) {
+                    $columns = $ro['columns'];
+                    $getColName = request($name.'-'.$columns[0]['name']);
+                    $count_input_data = ($getColName)?(count($getColName) - 1):0;
+                    $child_array = [];
 
-                DB::table($childtable)->where($fk, $id)->delete();
-                $lastId = CRUDBooster::newId($childtable);
-                $childtablePK = CB::pk($childtable);
+                    if (isset($ro['table'])) {
+                        $childtable = CRUDBooster::parseSqlTable($ro['table'])['table'];
+                        if (isset($ro['foreign_key'])) {
+                            $fk = $ro['foreign_key'];
 
-                for ($i = 0; $i <= $count_input_data; $i++) {
-                    $column_data = [];
-                    foreach ($columns as $col) {
-                        $colname = $col['name'];
-                        $colvalue = request($name.'-'.$colname)[$i];
-                        if(isset($colvalue) === TRUE) {
-                            $column_data[$colname] = $colvalue;
+                            DB::table($childtable)->where($fk, $id)->delete();
+                            $lastId = CRUDBooster::newId($childtable);
+                            $childtablePK = CB::pk($childtable);
+
+                            for ($i = 0; $i <= $count_input_data; $i++) {
+                                $column_data = [];
+                                foreach ($columns as $col) {
+                                    $colname = $col['name'];
+                                    $colvalue = request($name.'-'.$colname)[$i];
+                                    if(isset($colvalue) === TRUE) {
+                                        $column_data[$colname] = $colvalue;
+                                    }
+                                }
+                                if(isset($column_data) === TRUE){
+                                    $column_data[$childtablePK] = $lastId;
+                                    $column_data[$fk] = $id;
+                                    $child_array[] = $column_data;
+                                    $lastId++;
+                                }
+                            }
+                            $child_array = array_reverse($child_array);
+                            DB::table($childtable)->insert($child_array);
                         }
                     }
-                    if(isset($column_data) === TRUE){
-                        $column_data[$childtablePK] = $lastId;
-                        $column_data[$fk] = $id;
-                        $child_array[] = $column_data;
-                        $lastId++;
-                    }
                 }
-                $child_array = array_reverse($child_array);
-                DB::table($childtable)->insert($child_array);
             }
         }
 

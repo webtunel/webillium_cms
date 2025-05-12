@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta content="width=device-width, initial-scale=1, maximum-scale=1, shrink-to-fit=no" name="viewport">
-    <title>{{ ($page_title)?get_setting('appname').': '.strip_tags($page_title):"Admin Area" }}</title>
+    <title>{{ (isset($page_title) && $page_title)?get_setting('appname').': '.strip_tags($page_title):"Admin Area" }}</title>
     <meta name="csrf-token" content="{{ csrf_token() }}"/>
     <meta name='generator'
           content='CRUDBooster {{ \webtunel\webilliumcms\commands\CrudboosterVersionCommand::$version }}'/>
@@ -393,7 +393,7 @@
                     @if($module)
                         <h1>
                             <!--Now you can define $page_icon alongside $page_tite for custom forms to follow CRUDBooster theme style -->
-                            <i class='{!! isset($page_icon) ? $page_icon : $module->icon !!}'></i> {!! ucwords(($page_title)?:$module->name) !!}
+                            <i class='{!! isset($page_icon) ? $page_icon : $module->icon !!}'></i> {!! ucwords((isset($page_title) && $page_title)?$page_title:$module->name) !!}
                             &nbsp;&nbsp;
 
                             <!--START BUTTON -->

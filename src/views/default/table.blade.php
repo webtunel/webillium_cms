@@ -63,11 +63,11 @@
 
                 $sort_column = Request::has('filter_column') ? Request::get('filter_column') : [];
                 $sort_column = is_array($sort_column) ? $sort_column : [];
-                $colname = $col['label'];
-                $name = $col['name'];
-                $field = $col['field_with'];
-                $width = (isset($col['width'])) ? $col['width'] : "auto";
-		$style = (isset($col['style'])) ? $col['style'] : "";
+                $colname = $col['label'] ?? '';
+                $name = $col['name'] ?? '';
+                $field = $col['field_with'] ?? '';
+                $width = $col['width'] ?? "auto";
+                $style = $col['style'] ?? "";
                 $mainpath = trim(CRUDBooster::mainpath(), '/').$build_query;
                 echo "<th width='$width' $style>";
                 if (isset($sort_column[$field]) && is_array($sort_column[$field]) && isset($sort_column[$field]['sorting'])) {
@@ -96,7 +96,7 @@
 
             @if($button_table_action)
                 @if(CRUDBooster::isUpdate() || CRUDBooster::isDelete() || CRUDBooster::isRead())
-                    <th width='{{ isset($button_action_width)? $button_action_width :"auto"}}' style="text-align:right">{{cbLang("action_label")}}</th>
+                    <th width='{{ $button_action_width ?? "auto" }}' style="text-align:right">{{cbLang("action_label")}}</th>
                 @endif
             @endif
         </tr>
@@ -117,22 +117,32 @@
             </tr>
         @endif
 
-        @foreach($html_contents['html'] as $i=>$hc)
+        @foreach($html_contents['html'] ?? [] as $i=>$hc)
 
             @if($table_row_color)
                 <?php $tr_color = NULL;?>
                 @foreach($table_row_color as $trc)
                     <?php
-                    $query = $trc['condition'];
-                    $color = $trc['color'];
-                    $row = $html_contents['data'][$i];
+                    $query = $trc['condition'] ?? '';
+                    $color = $trc['color'] ?? '';
+                    $row = isset($html_contents['data'][$i]) ? $html_contents['data'][$i] : [];
                     foreach ($row as $key => $val) {
                         $query = str_replace("[".$key."]", '"'.$val.'"', $query);
                     }
 
-                    @eval("if($query) {
-                                      \$tr_color = \$color;
-                                  }");
+                    @if(!empty($query))
+                        @php
+                            $evalResult = false;
+                            try {
+                                eval('$evalResult = (' . $query . ');');
+                                if ($evalResult) {
+                                    $tr_color = $color;
+                                }
+                            } catch (\Throwable $e) {
+                                // Silently handle eval errors
+                            }
+                        @endphp
+                    @endif
                     ?>
                 @endforeach
                 <?php echo "<tr class='$tr_color'>";?>
@@ -141,7 +151,7 @@
                     @endif
 
                     @foreach($hc as $j=>$h)
-                        <td {{ $columns[$j]['style'] or ''}}>{!! $h !!}</td>
+                        <td {{ isset($columns[$j]) && isset($columns[$j]['style']) ? $columns[$j]['style'] : '' }}>{!! $h !!}</td>
                     @endforeach
                 </tr>
                 @endforeach
@@ -161,9 +171,9 @@
             <?php
             foreach ($columns as $col) {
                 if (isset($col['visible']) && $col['visible'] === FALSE) continue;
-                $colname = $col['label'];
-                $width = (isset($col['width'])) ?$col['width']: "auto";
-		$style = (isset($col['style'])) ? $col['style']: "";
+                $colname = $col['label'] ?? '';
+                $width = $col['width'] ?? "auto";
+                $style = $col['style'] ?? "";
                 echo "<th width='$width' $style>$colname</th>";
             }
             ?>

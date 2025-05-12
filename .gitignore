@@ -5,3 +5,4 @@ out
 gen
 composer.lock
 /example-app
+**/.claude/settings.local.json

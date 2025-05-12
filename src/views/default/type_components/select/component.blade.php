@@ -58,7 +58,7 @@
     @endpush
 
 @endif
-<div class='form-group {{$header_group_class}} {{ ($errors->first($name))?"has-error":"" }}' id='form-group-{{$name}}' style="{{@$form['style']}}">
+<div class='form-group {{$header_group_class}} {{ ($errors->first($name))?"has-error":"" }}' id='form-group-{{$name}}' style="{{$form['style'] ?? ''}}">
     <label class='control-label'>{{$form['label']}}
         @if($required)
             <span class='text-danger' title='{!! cbLang('this_field_is_required') !!}'>*</span>
@@ -69,7 +69,7 @@
             <option value=''>{{$default}}</option>
             <?php
             if (! $form['parent_select']) {
-                if (@$form['dataquery']):
+                if (isset($form['dataquery']) && !empty($form['dataquery'])):
 
                     $query = DB::select(DB::raw($form['dataquery']));
                     if ($query) {
@@ -81,7 +81,7 @@
 
                 endif;
 
-                if (@$form['dataenum']):
+                if (isset($form['dataenum']) && !empty($form['dataenum'])):
                     $dataenum = $form['dataenum'];
                     $dataenum = (is_array($dataenum)) ? $dataenum : explode(";", $dataenum);
 
@@ -102,18 +102,18 @@
                     }
                 endif;
 
-                if (@$form['datatable']):
+                if (isset($form['datatable']) && !empty($form['datatable'])):
                     $raw = explode(",", $form['datatable']);
-                    $format = $form['datatable_format'];
-                    $datatable_order = explode(',', $form['datatable_order']);
+                    $format = $form['datatable_format'] ?? '';
+                    $datatable_order = isset($form['datatable_order']) ? explode(',', $form['datatable_order']) : [];
                     $table1 = $raw[0];
                     $column1 = $raw[1];
 
-                    @$table2 = $raw[2];
-                    @$column2 = $raw[3];
+                    $table2 = isset($raw[2]) ? $raw[2] : null;
+                    $column2 = isset($raw[3]) ? $raw[3] : null;
 
-                    @$table3 = $raw[4];
-                    @$column3 = $raw[5];
+                    $table3 = isset($raw[4]) ? $raw[4] : null;
+                    $column3 = isset($raw[5]) ? $raw[5] : null;
 
                     $selects_data = DB::table($table1)->select($table1.".id");
 
@@ -121,7 +121,7 @@
                         $selects_data->where($table1.'.deleted_at', NULL);
                     }
 
-                    if (@$form['datatable_where']) {
+                    if (isset($form['datatable_where']) && !empty($form['datatable_where'])) {
                         $selects_data->whereraw($form['datatable_where']);
                     }
 
@@ -166,5 +166,5 @@
             ?>
         </select>
         <div class="text-danger">{!! $errors->first($name)?"<i class='fa fa-info-circle'></i> ".$errors->first($name):"" !!}</div>
-        <p class='help-block'>{{ @$form['help'] }}</p>
+        <p class='help-block'>{{ $form['help'] ?? '' }}</p>
 </div>

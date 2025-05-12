@@ -874,7 +874,7 @@ class CBController extends Controller
                 }
             }
 
-            if ($di['type'] == 'upload') {
+            if (isset($di['type']) && $di['type'] == 'upload') {
                 if ($id) {
                     $row = DB::table($this->table)->where($this->primary_key, $id)->first();
                     if ($row->{$di['name']} == '') {
@@ -883,16 +883,16 @@ class CBController extends Controller
                 }
             }
 
-            if (@$di['min']) {
+            if (isset($di['min'])) {
                 $ai[] = 'min:'.$di['min'];
             }
-            if (@$di['max']) {
+            if (isset($di['max'])) {
                 $ai[] = 'max:'.$di['max'];
             }
-            if (@$di['image']) {
+            if (isset($di['image'])) {
                 $ai[] = 'image';
             }
-            if (@$di['mimes']) {
+            if (isset($di['mimes'])) {
                 $ai[] = 'mimes:'.$di['mimes'];
             }
             $name = $di['name'];
@@ -1002,7 +1002,7 @@ class CBController extends Controller
                 continue;
             }
 
-            if ($ro['exception']) {
+            if (isset($ro['exception']) && $ro['exception']) {
                 continue;
             }
 

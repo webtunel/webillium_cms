@@ -130,19 +130,17 @@
                         $query = str_replace("[".$key."]", '"'.$val.'"', $query);
                     }
 
-                    @if(!empty($query))
-                        @php
-                            $evalResult = false;
-                            try {
-                                eval('$evalResult = (' . $query . ');');
-                                if ($evalResult) {
-                                    $tr_color = $color;
-                                }
-                            } catch (\Throwable $e) {
-                                // Silently handle eval errors
+                    if(!empty($query)) {
+                        $evalResult = false;
+                        try {
+                            eval('$evalResult = (' . $query . ');');
+                            if ($evalResult) {
+                                $tr_color = $color;
                             }
-                        @endphp
-                    @endif
+                        } catch (\Throwable $e) {
+                            // Silently handle eval errors
+                        }
+                    }
                     ?>
                 @endforeach
                 <?php echo "<tr class='$tr_color'>";?>

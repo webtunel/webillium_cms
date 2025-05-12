@@ -461,14 +461,131 @@
                     // Update modal title to include field type
                     $('#myModal .modal-title').html('<i class="fa fa-cog"></i> Options for <strong>' + current_field_type + '</strong> Field');
 
-                    // If the option area is empty, show a message
-                    if (current_option_area.children().length === 0) {
+                    // If the field type is empty, prompt to select one first
+                    if (!current_field_type) {
                         $('#myModal .modal-body').html(
-                            '<div class="alert alert-info">' +
-                            '<i class="fa fa-info-circle"></i> ' +
-                            'No options available for this field type or you need to select a field type first.' +
+                            '<div class="alert alert-warning">' +
+                            '<i class="fa fa-exclamation-triangle"></i> ' +
+                            'Please select a field type first.' +
                             '</div>'
                         );
+                        $('#myModal').modal('show');
+                        return;
+                    }
+
+                    // If option area is empty, let's fetch options for this field type
+                    if (current_option_area.children().length === 0) {
+                        var loadingHtml = '<div class="text-center p-3"><i class="fa fa-spinner fa-spin fa-2x"></i><br>Loading options...</div>';
+                        $('#myModal .modal-body').html(loadingHtml);
+
+                        // Use AJAX to load type info
+                        $.ajax({
+                            url: "{{CRUDBooster::mainpath('type-info')}}/" + current_field_type,
+                            type: "GET",
+                            dataType: "json",
+                            success: function(data) {
+                                $('#myModal .modal-body').empty();
+
+                                // Create a new option area div in the modal
+                                var modalOptionArea = $('<div class="option_area"></div>');
+                                $('#myModal .modal-body').append(modalOptionArea);
+
+                                // Add alert if available
+                                if (data.alert) {
+                                    modalOptionArea.append("<div class='alert alert-warning'><strong>IMPORTANT</strong><br/>" + data.alert + "</div>");
+                                }
+
+                                var tr_index = current_option_area.closest('tr').index();
+
+                                // Add required attributes
+                                if (data.attribute && data.attribute.required) {
+                                    $.each(data.attribute.required, function(key, val) {
+                                        var form_group_html = '';
+
+                                        if (val instanceof Object) {
+                                            form_group_html += "<div class='form-group'><label>" + key + "</label>";
+
+                                            if (val.type) {
+                                                if (val.type == 'radio') {
+                                                    $.each(val.enum, function(i, o) {
+                                                        form_group_html += "<input type='radio' name='option[" + tr_index + "][" + key + "]' value='" + o + "'/> " + o + " &nbsp;&nbsp;";
+                                                    });
+                                                } else if (val.type == 'array') {
+                                                    form_group_html += "<input class='form-control required' name='option[" + tr_index + "][" + key + "]' placeholder='" + val.placeholder + "' type='text'/>";
+                                                    form_group_html += "<input name='option[" + tr_index + "][" + key + "_type]' value='array' type='hidden'/>";
+                                                } else {
+                                                    form_group_html += "<input class='form-control required' name='option[" + tr_index + "][" + key + "]' placeholder='" + val.placeholder + "' type='text'/>";
+                                                }
+                                            } else {
+                                                form_group_html += "<input class='form-control required' name='option[" + tr_index + "][" + key + "]' placeholder='" + val + "' type='text'/>";
+                                            }
+
+                                            form_group_html += "</div>";
+                                        } else {
+                                            form_group_html += "<div class='form-group'>" +
+                                                "<label>" + key + "</label>" +
+                                                "<input class='form-control required' name='option[" + tr_index + "][" + key + "]' placeholder='" + val + "' type='text'/>" +
+                                                "</div>";
+                                        }
+
+                                        modalOptionArea.append(form_group_html);
+                                    });
+                                }
+
+                                // Add requiredOne attributes
+                                if (data.attribute && data.attribute.requiredOne) {
+                                    $.each(data.attribute.requiredOne, function(key, val) {
+                                        modalOptionArea.append(
+                                            "<div class='form-group'>" +
+                                            "<label>" + key + "</label>" +
+                                            "<input class='form-control required-one' name='option[" + tr_index + "][" + key + "]' placeholder='" + val + "' type='text'/>" +
+                                            "</div>"
+                                        );
+                                    });
+                                }
+
+                                // Add optional attributes
+                                if (data.attribute && data.attribute.optional) {
+                                    $.each(data.attribute.optional, function(key, val) {
+                                        if (typeof(val) == "object") {
+                                            if (val.type == 'textarea') {
+                                                modalOptionArea.append(
+                                                    "<div class='form-group'>" +
+                                                    "<label>" + key + "</label>" +
+                                                    "<textarea class='form-control' name='option[" + tr_index + "][" + key + "]' placeholder='" + val.placeholder + "'></textarea>" +
+                                                    "</div>"
+                                                );
+                                            }
+                                        } else {
+                                            modalOptionArea.append(
+                                                "<div class='form-group'>" +
+                                                "<label>" + key + "</label>" +
+                                                "<input class='form-control' name='option[" + tr_index + "][" + key + "]' placeholder='" + val + "' type='text'/>" +
+                                                "</div>"
+                                            );
+                                        }
+                                    });
+                                }
+
+                                // If no options were added, show a message
+                                if (modalOptionArea.children().length === 0) {
+                                    $('#myModal .modal-body').html(
+                                        '<div class="alert alert-info">' +
+                                        '<i class="fa fa-info-circle"></i> ' +
+                                        'No configuration options available for this field type.' +
+                                        '</div>'
+                                    );
+                                }
+                            },
+                            error: function() {
+                                $('#myModal .modal-body').html(
+                                    '<div class="alert alert-danger">' +
+                                    '<i class="fa fa-exclamation-circle"></i> ' +
+                                    'Error loading options for this field type. Please try again.' +
+                                    '</div>'
+                                );
+                            }
+                        });
                     } else {
                         // Clone the option area content and add it to the modal
                         var clone = current_option_area.clone();

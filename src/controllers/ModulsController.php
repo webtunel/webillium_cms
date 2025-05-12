@@ -845,34 +845,62 @@ class ModulsController extends CBController
     {
         header("Content-Type: application/json");
 
+        // Log the request for debugging
+        \Log::info("Type info requested for: " . $type);
+
         // Try to find info.json file in multiple possible locations
         $paths = [
             // Package path
             base_path('vendor/webtunel/webilliumcms/src/views/default/type_components/'.$type.'/info.json'),
             // Original CRUDBooster path
-            base_path('vendor/crocodicstudio/crudbooster/src/views/default/type_components/'.$type.'/info.json')
+            base_path('vendor/crocodicstudio/crudbooster/src/views/default/type_components/'.$type.'/info.json'),
+            // Local project components
+            base_path('resources/views/vendor/crudbooster/type_components/'.$type.'/info.json')
         ];
 
         foreach ($paths as $path) {
             if (file_exists($path)) {
+                \Log::info("Found type info at: " . $path);
                 echo file_get_contents($path);
                 return;
             }
         }
 
-        // If no info.json found, return a default structure
-        echo json_encode([
+        // If no info.json found, return a default structure based on the type
+        $defaultInfo = [
             "title" => ucfirst($type),
             "alert" => "This is a basic {$type} input field",
             "attribute" => [
-                "required" => [
-                    "placeholder" => "Enter placeholder text"
-                ],
-                "optional" => [
-                    "readonly" => "true/false"
-                ]
+                "required" => []
             ]
-        ]);
+        ];
+
+        // Add type-specific defaults
+        switch($type) {
+            case 'select':
+            case 'select2':
+            case 'radio':
+                $defaultInfo["attribute"]["required"]["dataenum"] = "Example: option1;option2;option3";
+                break;
+            case 'upload':
+            case 'filemanager':
+                $defaultInfo["attribute"]["required"]["upload_path"] = "Example: uploads/files/";
+                break;
+            case 'wysiwyg':
+                $defaultInfo["attribute"]["optional"]["filemanager_group_name"] = "Example: content";
+                break;
+            case 'number':
+            case 'money':
+                $defaultInfo["attribute"]["optional"]["decimals"] = "Example: 2";
+                break;
+            default:
+                $defaultInfo["attribute"]["required"]["placeholder"] = "Enter placeholder text";
+                $defaultInfo["attribute"]["optional"]["readonly"] = "true/false";
+                break;
+        }
+
+        \Log::info("Returning default type info for: " . $type);
+        echo json_encode($defaultInfo);
     }
 
     public function postStep4()

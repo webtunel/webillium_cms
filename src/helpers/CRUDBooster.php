@@ -972,13 +972,42 @@ class CRUDBooster
         }
 
         $f = explode('.', $table);
+        $driver = DB::connection()->getDriverName();
 
         if (count($f) == 1) {
-            return ["table" => $f[0], "database" => config('crudbooster.MAIN_DB_DATABASE')];
+            if ($driver === 'pgsql') {
+                // For PostgreSQL, include schema
+                return [
+                    "table" => $f[0],
+                    "database" => config('crudbooster.MAIN_DB_DATABASE'),
+                    "schema" => "public" // Default PostgreSQL schema
+                ];
+            } else {
+                return [
+                    "table" => $f[0],
+                    "database" => config('crudbooster.MAIN_DB_DATABASE')
+                ];
+            }
         } elseif (count($f) == 2) {
-            return ["database" => $f[0], "table" => $f[1]];
+            if ($driver === 'pgsql') {
+                // For PostgreSQL, assume database.table means schema.table
+                return [
+                    "schema" => $f[0],
+                    "table" => $f[1],
+                    "database" => config('crudbooster.MAIN_DB_DATABASE')
+                ];
+            } else {
+                return [
+                    "database" => $f[0],
+                    "table" => $f[1]
+                ];
+            }
         } elseif (count($f) == 3) {
-            return ["table" => $f[0], "schema" => $f[1], "table" => $f[2]];
+            return [
+                "database" => $f[0],
+                "schema" => $f[1],
+                "table" => $f[2]
+            ];
         }
 
         return ["table" => "", "database" => config('crudbooster.MAIN_DB_DATABASE')];
@@ -1345,24 +1374,56 @@ class CRUDBooster
 
     public static function getTableColumns($table)
     {
-        //$cols = DB::getSchemaBuilder()->getColumnListing($table);
         $table = CRUDBooster::parseSqlTable($table);
-        $cols = collect(DB::select('SELECT * FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = :database AND TABLE_NAME = :table', [
-            'database' => $table['database'],
-            'table' => $table['table'],
-        ]))->map(function ($x) {
-            return (array) $x;
-        })->toArray();
-
-        $result = [];
-        $result = $cols;
-
+        $driver = DB::connection()->getDriverName();
         $new_result = [];
-        foreach ($result as $ro) {
-            $new_result[] = $ro['COLUMN_NAME'];
-        }
 
-        return $new_result;
+        try {
+            if ($driver === 'pgsql') {
+                // PostgreSQL specific query
+                $schema = $table['schema'] ?? 'public'; // Default to public schema if not specified
+                $cols = DB::select("
+                    SELECT column_name
+                    FROM information_schema.columns
+                    WHERE table_schema = ? AND table_name = ?
+                ", [$schema, $table['table']]);
+
+                foreach ($cols as $col) {
+                    $new_result[] = $col->column_name;
+                }
+            } else {
+                // MySQL and other databases
+                $cols = collect(DB::select('SELECT * FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = :database AND TABLE_NAME = :table', [
+                    'database' => $table['database'],
+                    'table' => $table['table'],
+                ]))->map(function ($x) {
+                    return (array) $x;
+                })->toArray();
+
+                foreach ($cols as $ro) {
+                    $colName = isset($ro['COLUMN_NAME']) ? $ro['COLUMN_NAME'] :
+                              (isset($ro['column_name']) ? $ro['column_name'] : null);
+
+                    if ($colName) {
+                        $new_result[] = $colName;
+                    }
+                }
+            }
+
+            // If still empty, try using Schema as a fallback
+            if (empty($new_result)) {
+                try {
+                    $new_result = \Schema::getColumnListing($table['table']);
+                } catch (\Exception $e) {
+                    // Silently fail and return empty array
+                }
+            }
+
+            return $new_result;
+        } catch (\Exception $e) {
+            // Return empty array on error
+            return [];
+        }
     }
 
     public static function getNameTable($columns)

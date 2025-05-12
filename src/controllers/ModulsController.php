@@ -197,9 +197,50 @@ class ModulsController extends CBController
 
     public function getTableColumns($table)
     {
-        $columns = CRUDBooster::getTableColumns($table);
+        try {
+            // First, try the standard method
+            $columns = CRUDBooster::getTableColumns($table);
 
-        return response()->json($columns);
+            // If no columns returned or empty, try direct PostgreSQL schema query
+            if (empty($columns)) {
+                // Check if we're using PostgreSQL
+                $driver = DB::connection()->getDriverName();
+                if ($driver === 'pgsql') {
+                    // PostgreSQL specific query to get column names
+                    $schema = 'public'; // Default schema, might need to be configurable
+                    $columns = DB::select("
+                        SELECT column_name
+                        FROM information_schema.columns
+                        WHERE table_schema = ? AND table_name = ?
+                    ", [$schema, $table]);
+
+                    // Extract column names from result
+                    $columns = array_map(function($col) {
+                        return $col->column_name;
+                    }, $columns);
+                }
+            }
+
+            // Add fallback if still empty
+            if (empty($columns)) {
+                $columns = ['id']; // Always include at least ID
+
+                // Try getting columns via Schema
+                try {
+                    $schemaColumns = \Schema::getColumnListing($table);
+                    if (!empty($schemaColumns)) {
+                        $columns = $schemaColumns;
+                    }
+                } catch (\Exception $e) {
+                    // Ignore schema errors and keep fallback
+                }
+            }
+
+            return response()->json($columns);
+        } catch (\Exception $e) {
+            // Return a proper error response
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
     }
 
     public function getCheckSlug($slug)

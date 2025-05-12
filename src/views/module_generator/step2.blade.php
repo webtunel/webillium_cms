@@ -182,12 +182,36 @@
                 $.get("{{CRUDBooster::mainpath('table-columns')}}/" + table, function (response) {
                     t.next("ul").remove();
                     var list = '';
-                    $.each(response, function (i, obj) {
-                        if (obj.includes(v.toLowerCase())) {
-                            list += "<li>" + obj + "</li>";
+
+                    // Handle different response formats
+                    if (response) {
+                        if (typeof response === 'object' && response.error) {
+                            // Show error message
+                            list += "<li>Error: " + response.error + "</li>";
+                        } else {
+                            $.each(response, function (i, obj) {
+                                // Handle both string and object formats
+                                var columnName = (typeof obj === 'string') ? obj : (obj.column_name || obj);
+
+                                // Ensure columnName is a string
+                                columnName = String(columnName);
+
+                                // Check if the column name contains the search value
+                                if (columnName.toLowerCase().includes(v.toLowerCase())) {
+                                    list += "<li>" + columnName + "</li>";
+                                }
+                            });
                         }
-                    });
+                    }
+
+                    if (list === '') {
+                        list = "<li>No matching columns found</li>";
+                    }
+
                     t.after("<ul class='sub'>" + list + "</ul>");
+                }).fail(function(xhr, status, error) {
+                    t.next("ul").remove();
+                    t.after("<ul class='sub'><li>Error loading columns</li></ul>");
                 });
             }
 
@@ -203,10 +227,29 @@
                 $.get("{{CRUDBooster::mainpath('table-columns')}}/" + table, function (response) {
                     t.next("ul").remove();
                     var list = '';
-                    $.each(response, function (i, obj) {
-                        list += "<li>" + obj + "</li>";
-                    });
+
+                    // Handle different response formats
+                    if (response) {
+                        if (typeof response === 'object' && response.error) {
+                            // Show error message
+                            list += "<li>Error: " + response.error + "</li>";
+                        } else {
+                            $.each(response, function (i, obj) {
+                                // Handle both string and object formats
+                                var columnName = (typeof obj === 'string') ? obj : (obj.column_name || obj);
+                                list += "<li>" + columnName + "</li>";
+                            });
+                        }
+                    }
+
+                    if (list === '') {
+                        list = "<li>No columns found</li>";
+                    }
+
                     t.after("<ul class='sub'>" + list + "</ul>");
+                }).fail(function(xhr, status, error) {
+                    t.next("ul").remove();
+                    t.after("<ul class='sub'><li>Error loading columns</li></ul>");
                 });
             }
 

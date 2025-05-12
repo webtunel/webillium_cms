@@ -1,4 +1,4 @@
-<div class='form-group {{$header_group_class}} {{ ($errors->first($name))?"has-error":"" }}' id='form-group-{{$name}}' style="{{@$form['style']}}">
+<div class='form-group {{$header_group_class}} {{ ($errors->first($name))?"has-error":"" }}' id='form-group-{{$name}}' style="{{isset($form['style']) ? $form['style'] : ''}}">
     <label class='control-label col-sm-2'>{{$form['label']}}
         @if($required)
             <span class='text-danger' title='{!! cbLang('this_field_is_required') !!}'>*</span>
@@ -32,7 +32,7 @@
         @endif
 
         <?php
-        if (@$form['datatable']):
+        if (isset($form['datatable']) && $form['datatable']):
             $datatable_array = explode(",", $form['datatable']);
             $datatable_tab = $datatable_array[0];
             $datatable_field = $datatable_array[1];
@@ -59,7 +59,7 @@
 
             $selects_data = $selects_data->orderby($datatable_field, "asc")->get();
 
-            if ($form['relationship_table']) {
+            if (isset($form['relationship_table']) && $form['relationship_table']) {
                 $foreignKey = CRUDBooster::getForeignKey($table, $form['relationship_table']);
                 $foreignKey2 = CRUDBooster::getForeignKey($datatable_tab, $form['relationship_table']);
 
@@ -93,7 +93,7 @@
             }
 
         endif;
-        if ($form['dataquery']) {
+        if (isset($form['dataquery']) && $form['dataquery']) {
 
             $query = DB::select(DB::raw($form['dataquery']));
             @$value = explode(';', $value);
@@ -113,6 +113,6 @@
         }
         ?>
         <div class="text-danger">{!! $errors->first($name)?"<i class='fa fa-info-circle'></i> ".$errors->first($name):"" !!}</div>
-        <p class='help-block'>{{ @$form['help'] }}</p>
+        <p class='help-block'>{{ isset($form['help']) ? $form['help'] : '' }}</p>
     </div>
 </div>

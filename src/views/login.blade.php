@@ -331,7 +331,7 @@
     </style>
     <style type="text/css">
         body {
-            background: #04C6FD url('{{ asset('vendor/crudbooster/assets/bg_blur3.jpg') }}');
+            background: #04C6FD url('{{ asset('vendor/crudbooster/assets/68fe521e697bdabf461d2bb1f4aeb48c.webp') }}');
             color: #000  !important;
             background-repeat: no-repeat;
             background-position: center;

@@ -68,6 +68,7 @@
                 $field = $col['field_with'] ?? '';
                 $width = $col['width'] ?? "auto";
                 $style = $col['style'] ?? "";
+                $build_query = $build_query ?? '';
                 $mainpath = trim(CRUDBooster::mainpath(), '/').$build_query;
                 echo "<th width='$width' $style style=\"color: #fff;\">";
                 if (isset($sort_column[$field]) && is_array($sort_column[$field]) && isset($sort_column[$field]['sorting'])) {

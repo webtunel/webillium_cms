@@ -217,7 +217,7 @@ class MenusController extends CBController
             "name" => "is_active",
             "type" => "radio",
             "required" => true,
-            "validation" => "required|integer",
+            "validation" => "required",
             "dataenum" => ['t|Active', 'f|InActive'],
             'value' => 't',
         ];
@@ -226,7 +226,7 @@ class MenusController extends CBController
             "name" => "is_dashboard",
             "type" => "radio",
             "required" => true,
-            "validation" => "required|integer",
+            "validation" => "required",
             "dataenum" => ['t|Yes', 'f|No'],
             'value' => 'f',
         ];

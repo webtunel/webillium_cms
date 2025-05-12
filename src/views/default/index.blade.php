@@ -95,7 +95,7 @@
                         $build_query = ($build_query) ? "?".$build_query : "";
                     @endphp
                     <a  href="javascript:void(0)" id='btn_advanced_filter' data-url-parameter='{{$build_query}}'
-                       title='{{cbLang('filter_dialog_title')}}' class="btn btn-sm btn-default {{(Request::has('filter_column'))?'active':''}}">
+                       title='{{cbLang('filter_dialog_title')}}' class="btn btn-sm btn-default {{(Request::has('filter_column') && is_array(Request::get('filter_column')))?'active':''}}">
                         <i class="fa fa-filter"></i> {{cbLang("button_filter")}}
                     </a>
                 @endif

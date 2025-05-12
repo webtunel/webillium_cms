@@ -62,14 +62,15 @@
                 if (isset($col['visible']) && $col['visible'] === FALSE) continue;
 
                 $sort_column = Request::has('filter_column') ? Request::get('filter_column') : [];
+                $sort_column = is_array($sort_column) ? $sort_column : [];
                 $colname = $col['label'];
                 $name = $col['name'];
                 $field = $col['field_with'];
-                $width = (isset($col['width'])) ?$col['width']: "auto";
-		$style = (isset($col['style'])) ?$col['style']: "";
+                $width = (isset($col['width'])) ? $col['width'] : "auto";
+		$style = (isset($col['style'])) ? $col['style'] : "";
                 $mainpath = trim(CRUDBooster::mainpath(), '/').$build_query;
                 echo "<th width='$width' $style>";
-                if (isset($sort_column[$field])) {
+                if (isset($sort_column[$field]) && is_array($sort_column[$field]) && isset($sort_column[$field]['sorting'])) {
                     switch ($sort_column[$field]['sorting']) {
                         case 'asc':
                             $url = CRUDBooster::urlFilterColumn($field, 'sorting', 'desc');
@@ -358,7 +359,7 @@ $total = $result->total();
                                         <input type='text' class='filter-value form-control'
                                                style="{{ (CRUDBooster::getTypeFilter($col["field_with"]) == 'between')?"display:none":"display:block"}}"
                                                disabled name='filter_column[{{$col["field_with"]}}][value]'
-                                               value='{{ (!is_array(CRUDBooster::getValueFilter($col["field_with"])))?CRUDBooster::getValueFilter($col["field_with"]):"" }}'>
+                                               value='{{ (CRUDBooster::getValueFilter($col["field_with"]) !== null && !is_array(CRUDBooster::getValueFilter($col["field_with"]))) ? CRUDBooster::getValueFilter($col["field_with"]) : "" }}'>
 
                                         <div class='row between-group'
                                              style="{{ (CRUDBooster::getTypeFilter($col["field_with"]) == 'between')?"display:block":"display:none" }}">
@@ -374,7 +375,7 @@ $total = $result->total();
                                                             name='filter_column[{{$col["field_with"]}}][value][]'
                                                             value='<?php
                                                                 $value = CRUDBooster::getValueFilter($col["field_with"]);
-                                                                echo (CRUDBooster::getTypeFilter($col["field_with"]) == 'between') ? $value[0] : "";
+                                                                echo (CRUDBooster::getTypeFilter($col["field_with"]) == 'between' && is_array($value) && isset($value[0])) ? $value[0] : "";
                                                             ?>'>
                                                 </div>
                                             </div>
@@ -390,7 +391,7 @@ $total = $result->total();
                                                             name='filter_column[{{$col["field_with"]}}][value][]'
                                                             value='<?php
                                                                 $value = CRUDBooster::getValueFilter($col["field_with"]);
-                                                                echo (CRUDBooster::getTypeFilter($col["field_with"]) == 'between') ? $value[1] : "";
+                                                                echo (CRUDBooster::getTypeFilter($col["field_with"]) == 'between' && is_array($value) && isset($value[1])) ? $value[1] : "";
                                                             ?>'>
                                                 </div>
                                             </div>

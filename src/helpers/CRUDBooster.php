@@ -692,29 +692,68 @@ class CRUDBooster
 
     public static function getValueFilter($field)
     {
-        $filter = Request::has('filter_column') ? Request::get('filter_column') : [];
-        if (is_array($filter) && isset($filter[$field]) && isset($filter[$field]['value'])) {
-            return $filter[$field]['value'];
+        if (!Request::has('filter_column')) {
+            return null;
         }
-        return null;
+
+        $filter = Request::get('filter_column');
+        if (!is_array($filter)) {
+            return null;
+        }
+
+        if (!isset($filter[$field]) || !is_array($filter[$field])) {
+            return null;
+        }
+
+        if (!isset($filter[$field]['value'])) {
+            return null;
+        }
+
+        return $filter[$field]['value'];
     }
 
     public static function getSortingFilter($field)
     {
-        $filter = Request::has('filter_column') ? Request::get('filter_column') : [];
-        if (is_array($filter) && isset($filter[$field]) && isset($filter[$field]['sorting'])) {
-            return $filter[$field]['sorting'];
+        if (!Request::has('filter_column')) {
+            return null;
         }
-        return null;
+
+        $filter = Request::get('filter_column');
+        if (!is_array($filter)) {
+            return null;
+        }
+
+        if (!isset($filter[$field]) || !is_array($filter[$field])) {
+            return null;
+        }
+
+        if (!isset($filter[$field]['sorting'])) {
+            return null;
+        }
+
+        return $filter[$field]['sorting'];
     }
 
     public static function getTypeFilter($field)
     {
-        $filter = Request::has('filter_column') ? Request::get('filter_column') : [];
-        if (is_array($filter) && isset($filter[$field]) && isset($filter[$field]['type'])) {
-            return $filter[$field]['type'];
+        if (!Request::has('filter_column')) {
+            return null;
         }
-        return null;
+
+        $filter = Request::get('filter_column');
+        if (!is_array($filter)) {
+            return null;
+        }
+
+        if (!isset($filter[$field]) || !is_array($filter[$field])) {
+            return null;
+        }
+
+        if (!isset($filter[$field]['type'])) {
+            return null;
+        }
+
+        return $filter[$field]['type'];
     }
 
     public static function stringBetween($string, $start, $end)
@@ -1098,23 +1137,25 @@ class CRUDBooster
         $params = Request::all();
         $mainpath = trim(self::mainpath(), '/');
 
-        if ($params['filter_column'] && $singleSorting) {
+        if (isset($params['filter_column']) && is_array($params['filter_column']) && $singleSorting) {
             foreach ($params['filter_column'] as $k => $filter) {
-                foreach ($filter as $t => $val) {
-                    if ($t == 'sorting') {
-                        unset($params['filter_column'][$k]['sorting']);
+                if (is_array($filter)) {
+                    foreach ($filter as $t => $val) {
+                        if ($t == 'sorting') {
+                            unset($params['filter_column'][$k]['sorting']);
+                        }
                     }
                 }
             }
         }
 
+        if (!isset($params['filter_column']) || !is_array($params['filter_column'])) {
+            $params['filter_column'] = [];
+        }
+
         $params['filter_column'][$key][$type] = $value;
 
-        if (isset($params)) {
-            return $mainpath.'?'.http_build_query($params);
-        } else {
-            return $mainpath.'?filter_column['.$key.']['.$type.']='.$value;
-        }
+        return $mainpath.'?'.http_build_query($params);
     }
 
     public static function insertLog($description, $details = '')

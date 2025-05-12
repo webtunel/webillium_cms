@@ -398,11 +398,12 @@ class CBController extends Controller
         }
 
         $filter_is_orderby = false;
-        if (request('filter_column')) {
+        if (request('filter_column') && is_array(request('filter_column'))) {
 
             $filter_column = request('filter_column');
             $result->where(function ($w) use ($filter_column) {
                 foreach ($filter_column as $key => $fc) {
+                    if (!is_array($fc)) continue;
 
                     $value = isset($fc['value']) ? $fc['value'] : '';
                     $type = isset($fc['type']) ? $fc['type'] : '';
@@ -447,6 +448,8 @@ class CBController extends Controller
             });
 
             foreach ($filter_column as $key => $fc) {
+                if (!is_array($fc)) continue;
+
                 $value = isset($fc['value']) ? $fc['value'] : '';
                 $type = isset($fc['type']) ? $fc['type'] : '';
                 $sorting = isset($fc['sorting']) ? $fc['sorting'] : '';

@@ -39,7 +39,7 @@ class CBSeeder extends Seeder
             'content' => '<p>Hi,</p><p>Someone requested forgot password, here is your new password : </p><p>[password]</p><p><br></p><p>--</p><p>Regards,</p><p>Admin</p>',
             'description' => '[password]',
             'from_name' => 'System',
-            'from_email' => 'system@crudbooster.com',
+            'from_email' => 'system@webtunel.com',
             'cc_email' => null,
         ]);
         $this->command->info("Create email templates completed");
@@ -209,7 +209,7 @@ class CBSeeder extends Seeder
                 'created_at' => date('Y-m-d H:i:s'),
                 'name' => 'email_sender',
                 'label' => 'Email Sender',
-                'content' => 'support@crudbooster.com',
+                'content' => 'support@webtunel.com',
                 'content_input_type' => 'text',
                 'group_setting' => cbLang('email_setting'),
                 'dataenum' => null,
@@ -272,7 +272,7 @@ class CBSeeder extends Seeder
                 'name' => 'appname',
                 'label' => 'Application Name',
                 'group_setting' => cbLang('application_setting'),
-                'content' => 'CRUDBooster',
+                'content' => 'WebilliumCMS',
                 'content_input_type' => 'text',
                 'dataenum' => null,
                 'helper' => null,

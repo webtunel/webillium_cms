@@ -1,16 +1,29 @@
 # How To Create Module (CRUD)
 Go to **Module Generator** menu -> Add New Module
+
+## Module Wizard
+The Module Wizard is available for both new module creation and editing existing modules. You can access the wizard by:
+- Creating a new module from the "Generate New Module" button
+- Clicking the "Module Wizard" action button on any existing module
+
 ## Step 1
 | Field Name      | Description         |
 | ----------------|---------------------|
 | Table Name      | Module table name   |
 | Icon            | Module icon         |
 | Module Slug     | Module slug for url |
+| Button Action Style | Style of action buttons (button_icon, button_icon_text, button_text, dropdown) |
 
 ```
 (v) also create module for this menu
 ```
 You might check if you want create the menu also
+
+Additional settings:
+- **Button Action Style**: Choose between `button_icon`, `button_icon_text`, `button_text`, or `dropdown`
+- **Button Settings**: Each action button (add, edit, delete, detail, show, filter, export, import) can be enabled or disabled
+- **Global Privilege**: Enable to make the module accessible by all privileges
+
 ## Step 2
 | Field Name      | Description         |
 | ----------------|---------------------|
@@ -45,6 +58,23 @@ You might check if you want create the menu also
 | Show Filtering | Check if you want to show filtering button |
 | Show Import | Check if you want to show import button | 
 | Show Export | Check if you want to show export button |
+
+### Default Values
+By default, button settings are configured as follows:
+- All buttons (add, edit, delete, detail, show, filtering) default to 'Yes'
+- Export and import buttons default to 'No'
+
+## Database Support
+Webillium CMS supports multiple database types:
+- MySQL/MariaDB
+- PostgreSQL (including schema support)
+- Other Laravel-supported databases
+
+## Maintenance Features
+The system includes maintenance features to help manage your modules:
+- Button settings can be fixed automatically for all modules
+- Module controllers are generated with proper namespace and imports
+- Support for custom debugging through logs
 
 ## What's Next
 - [How To Add Column In Grid Data](./how-to-add-column.md)

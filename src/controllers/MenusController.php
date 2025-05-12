@@ -179,7 +179,7 @@ class MenusController extends CBController
             "name" => "module_slug",
             "type" => "select",
             "datatable" => "cms_moduls,name",
-            "datatable_where" => "is_protected = 0",
+            "datatable_where" => "is_protected = 'f'",
             "value" => $id_module,
         ];
         $this->form[] = [
@@ -218,8 +218,8 @@ class MenusController extends CBController
             "type" => "radio",
             "required" => true,
             "validation" => "required|integer",
-            "dataenum" => ['1|Active', '0|InActive'],
-            'value' => '1',
+            "dataenum" => ['t|Active', 'f|InActive'],
+            'value' => 't',
         ];
         $this->form[] = [
             "label" => "Dashboard",
@@ -227,8 +227,8 @@ class MenusController extends CBController
             "type" => "radio",
             "required" => true,
             "validation" => "required|integer",
-            "dataenum" => ['1|Yes', '0|No'],
-            'value' => '0',
+            "dataenum" => ['t|Yes', 'f|No'],
+            'value' => 'f',
         ];
 
         $id_cms_privileges = Request::get('id_cms_privileges');
@@ -250,19 +250,19 @@ class MenusController extends CBController
         $id_cms_privileges = Request::get('id_cms_privileges');
         $id_cms_privileges = ($id_cms_privileges) ?: CRUDBooster::myPrivilegeId();
 
-        $menu_active = DB::table('cms_menus')->where('parent_id', 0)->where('is_active', 1)->orderby('sorting', 'asc')->get();
+        $menu_active = DB::table('cms_menus')->where('parent_id', 0)->where('is_active', 't')->orderby('sorting', 'asc')->get();
 
         foreach ($menu_active as &$menu) {
-            $child = DB::table('cms_menus')->where('is_active', 1)->where('parent_id', $menu->id)->orderby('sorting', 'asc')->get();
+            $child = DB::table('cms_menus')->where('is_active', 't')->where('parent_id', $menu->id)->orderby('sorting', 'asc')->get();
             if (count($child)) {
                 $menu->children = $child;
             }
         }
 
-        $menu_inactive = DB::table('cms_menus')->where('parent_id', 0)->where('is_active', 0)->orderby('sorting', 'asc')->get();
+        $menu_inactive = DB::table('cms_menus')->where('parent_id', 0)->where('is_active', 'f')->orderby('sorting', 'asc')->get();
 
         foreach ($menu_inactive as &$menu) {
-            $child = DB::table('cms_menus')->where('is_active', 1)->where('parent_id', $menu->id)->orderby('sorting', 'asc')->get();
+            $child = DB::table('cms_menus')->where('is_active', 't')->where('parent_id', $menu->id)->orderby('sorting', 'asc')->get();
             if (count($child)) {
                 $menu->children = $child;
             }
@@ -339,11 +339,15 @@ class MenusController extends CBController
                 $ci = 1;
                 foreach ($ro['children'][0] as $c) {
                     $id = $c['id'];
-                    DB::table('cms_menus')->where('id', $id)->update(['sorting' => $ci, 'parent_id' => $pid, 'is_active' => $isActive]);
+                    // Convert the isActive value to PostgreSQL boolean
+                    $active_value = ($isActive == '1' || $isActive === true) ? 't' : 'f';
+                    DB::table('cms_menus')->where('id', $id)->update(['sorting' => $ci, 'parent_id' => $pid, 'is_active' => $active_value]);
                     $ci++;
                 }
             }
-            DB::table('cms_menus')->where('id', $pid)->update(['sorting' => $i, 'parent_id' => 0, 'is_active' => $isActive]);
+            // Convert the isActive value to PostgreSQL boolean
+            $active_value = ($isActive == '1' || $isActive === true) ? 't' : 'f';
+            DB::table('cms_menus')->where('id', $pid)->update(['sorting' => $i, 'parent_id' => 0, 'is_active' => $active_value]);
             $i++;
         }
 

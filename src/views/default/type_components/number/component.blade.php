@@ -6,7 +6,7 @@
     </label>
 
         <input type='number' step="{{($form['step'])?:'1'}}" title="{{$form['label']}}"
-               {{$required}} {{$readonly}} {!!$placeholder!!} {{$disabled}} {{isset($validation['min'])?"min=".$validation['min']:""}} {{isset($validation['max'])?"max=".$validation['max']:""}} class='form-control'
+               {{$required}} {{$readonly}} {!!$placeholder!!} {{$disabled}} {{isset($validation) && isset($validation['min'])?"min=".$validation['min']:""}} {{isset($validation) && isset($validation['max'])?"max=".$validation['max']:""}} class='form-control'
                name="{{$name}}" id="{{$name}}" value='{{$value}}'/>
         <div class="text-danger">{!! $errors->first($name)?"<i class='fa fa-info-circle'></i> ".$errors->first($name):"" !!}</div>
         <p class='help-block'>{{ isset($form['help']) ? $form['help'] : '' }}</p>

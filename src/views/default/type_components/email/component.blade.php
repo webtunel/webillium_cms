@@ -12,7 +12,7 @@
                 </div>
             </div>
             <input class="form-control phone-number" type='email' title="{{$form['label']}}"
-                   {{$required}} {{$readonly}} {!!$placeholder!!} {{$disabled}} {{isset($validation['max'])?"maxlength=".$validation['max']:""}} class='form-control'
+                   {{$required}} {{$readonly}} {!!$placeholder!!} {{$disabled}} {{isset($validation) && isset($validation['max'])?"maxlength=".$validation['max']:""}} class='form-control'
                    name="{{$name}}" id="{{$name}}" value='{{$value}}'>
         </div>
         <div class="text-danger">{!! $errors->first($name)?"<i class='fa fa-info-circle'></i> ".$errors->first($name):"" !!}</div>

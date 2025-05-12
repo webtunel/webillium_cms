@@ -6,7 +6,7 @@
     </label>
 
         <input type='password' title="{{$form['label']}}" id="{{$name}}"
-               {{$required}} {!!$placeholder!!} {{$readonly}} {{$disabled}} {{isset($validation['max'])?"maxlength=".$validation['max']:""}} class='form-control'
+               {{$required}} {!!$placeholder!!} {{$readonly}} {{$disabled}} {{isset($validation) && isset($validation['max'])?"maxlength=".$validation['max']:""}} class='form-control'
                name="{{$name}}"/>
         <div class="text-danger">{!! $errors->first($name)?"<i class='fa fa-info-circle'></i> ".$errors->first($name):"" !!}</div>
         <p class='help-block'>{{ isset($form['help']) ? $form['help'] : '' }}</p>

@@ -647,15 +647,15 @@
                                     if($types):
                                     ?>
 
-                                    @if($types->alert)
+                                    @if(isset($type_info) && isset($type_info->alert))
                                         <div class="alert alert-warning">
-                                            {!! $types->alert !!}
+                                            {!! $type_info->alert !!}
                                         </div>
                                     @endif
 
                                     <?php
-                                    if(isset($types->attribute->required)):
-                                    foreach($types->attribute->required as $key=>$val):
+                                    if(isset($type_info) && isset($type_info->attribute) && isset($type_info->attribute->required)):
+                                    foreach($type_info->attribute->required as $key=>$val):
                                     @$value = isset($form[$key]) ? $form[$key] : '';
                                     if(is_object($val)):
 
@@ -691,8 +691,8 @@
 
 
                                     <?php
-                                    if(isset($types->attribute->requiredOne)):
-                                    foreach($types->attribute->requiredOne as $key=>$val):
+                                    if(isset($type_info) && isset($type_info->attribute) && isset($type_info->attribute->requiredOne)):
+                                    foreach($type_info->attribute->requiredOne as $key=>$val):
                                     @$value = isset($form[$key]) ? $form[$key] : '';
                                     ?>
                                     <div class="form-group">
@@ -702,8 +702,8 @@
                                     <?php endforeach; endif;?>
 
                                     <?php
-                                    if(isset($types->attribute->optional)):
-                                    foreach($types->attribute->optional as $key=>$val):
+                                    if(isset($type_info) && isset($type_info->attribute) && isset($type_info->attribute->optional)):
+                                    foreach($type_info->attribute->optional as $key=>$val):
                                     @$value = isset($form[$key]) ? $form[$key] : '';
 
                                     ?>

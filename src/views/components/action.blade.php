@@ -32,13 +32,13 @@
     }
 
     $label = $a['label'];
-    $title = ($a['title']) ?: $a['label'];
-    $icon = $a['icon'];
-    $color = $a['color'] ?: 'primary';
-    $confirmation = $a['confirmation'];
-    $target = $a['target'] ?: '_self';
+    $title = isset($a['title']) ? $a['title'] : $a['label'];
+    $icon = $a['icon'] ?? 'fa fa-check';
+    $color = $a['color'] ?? 'primary';
+    $confirmation = $a['confirmation'] ?? false;
+    $target = $a['target'] ?? '_self';
 
-    $url = $a['url'];
+    $url = $a['url'] ?? '#';
     if (isset($confirmation) && ! empty($confirmation)) {
         $url = "javascript:;";
     }
@@ -113,10 +113,10 @@
                     $a['url'] = str_replace("[".$key."]", $val, $a['url']);
                 }
 
-                $label = $a['label'];
-                $url = $a['url']."?return_url=".urlencode(Request::fullUrl());
-                $icon = $a['icon'];
-                $color = $a['color'] ?: 'primary';
+                $label = $a['label'] ?? 'Action';
+                $url = ($a['url'] ?? '#')."?return_url=".urlencode(Request::fullUrl());
+                $icon = $a['icon'] ?? 'fa fa-check';
+                $color = $a['color'] ?? 'primary';
 
                 if (isset($a['showIf'])) {
 

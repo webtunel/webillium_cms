@@ -464,8 +464,15 @@ class CBController extends Controller
                 }
 
                 if ($type == 'between') {
-                    if ($key && is_array($value) && isset($value[0]) && isset($value[1])) {
-                        $result->whereBetween($key, $value);
+                    if ($key && is_array($value)) {
+                        // Make sure we have both values for the between clause
+                        if (!isset($value[0])) $value[0] = '';
+                        if (!isset($value[1])) $value[1] = '';
+
+                        // Only apply the filter if at least one value is provided
+                        if ($value[0] !== '' || $value[1] !== '') {
+                            $result->whereBetween($key, $value);
+                        }
                     }
                 } else {
                     continue;

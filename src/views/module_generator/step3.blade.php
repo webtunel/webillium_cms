@@ -35,25 +35,46 @@
 
             .sub {
                 position: absolute;
-                top: inherit;
-                left: inherit;
-                padding: 0 0 0 0;
+                top: 35px; /* Position below the input field */
+                left: 15px;
+                padding: 0;
+                margin: 0;
                 list-style-type: none;
                 height: 180px;
-                overflow: auto;
-                z-index: 1;
+                overflow-y: auto;
+                z-index: 100;
+                background: white;
+                border: 1px solid #ccc;
+                box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+                max-height: 300px;
+                width: 220px;
             }
 
             .sub li {
-                padding: 5px;
-                background: #eae9e8;
+                padding: 8px 12px;
+                background: #ffffff;
                 cursor: pointer;
                 display: block;
-                width: 180px;
+                border-bottom: 1px solid #f0f0f0;
+                width: 100%;
+                font-size: 14px;
             }
 
             .sub li:hover {
-                background: #ECF0F5;
+                background: #f7f7f7;
+                color: #3c8dbc;
+            }
+
+            /* Make sure the dropdown is on top of other elements */
+            .form-control:focus + .sub,
+            .sub:hover {
+                display: block !important;
+            }
+
+            /* Ensure proper z-index for dropdown menus */
+            .table-form {
+                position: relative;
+                z-index: 1;
             }
         </style>
     @endpush
@@ -75,28 +96,64 @@
 
                 t.next("ul").remove();
                 var list = '';
-                $.each(types, function (i, obj) {
-                    list += "<li>" + obj + "</li>";
-                });
+
+                if (types && types.length > 0) {
+                    $.each(types, function (i, obj) {
+                        if (typeof obj === 'string') {
+                            list += "<li>" + obj + "</li>";
+                        }
+                    });
+                } else {
+                    // Fallback options if types array is empty
+                    var defaultTypes = ['text', 'textarea', 'select', 'checkbox', 'radio', 'number', 'date', 'time', 'datetime', 'email', 'password', 'hidden'];
+                    $.each(defaultTypes, function(i, type) {
+                        list += "<li>" + type + "</li>";
+                    });
+                }
+
+                if (list === '') {
+                    list = "<li>text</li><li>textarea</li><li>select</li><li>checkbox</li><li>radio</li><li>number</li>";
+                }
 
                 t.after("<ul class='sub'>" + list + "</ul>");
+                t.next("ul").show(); // Make sure the dropdown is visible
             }
 
             function showTypeSuggestLike(t) {
                 t = $(t);
 
-                var v = t.val();
+                var v = t.val().toLowerCase();
                 t.next("ul").remove();
-                if (!v) return false;
+                if (!v) {
+                    // If empty, show all types
+                    showTypeSuggest(t);
+                    return;
+                }
 
                 var list = '';
-                $.each(types, function (i, obj) {
-                    if (obj.includes(v.toLowerCase())) {
-                        list += "<li>" + obj + "</li>";
-                    }
-                });
+
+                if (types && types.length > 0) {
+                    $.each(types, function (i, obj) {
+                        if (typeof obj === 'string' && obj.toLowerCase().includes(v)) {
+                            list += "<li>" + obj + "</li>";
+                        }
+                    });
+                } else {
+                    // Fallback options if types array is empty
+                    var defaultTypes = ['text', 'textarea', 'select', 'checkbox', 'radio', 'number', 'date', 'time', 'datetime', 'email', 'password', 'hidden'];
+                    $.each(defaultTypes, function(i, type) {
+                        if (type.includes(v)) {
+                            list += "<li>" + type + "</li>";
+                        }
+                    });
+                }
+
+                if (list === '') {
+                    list = "<li>No matching types found</li>";
+                }
 
                 t.after("<ul class='sub'>" + list + "</ul>");
+                t.next("ul").show(); // Make sure the dropdown is visible
             }
 
             function showNameSuggest(t) {
@@ -208,8 +265,14 @@
 
                 $(document).mouseup(function (e) {
                     var container = $(".sub");
-                    if (!container.is(e.target)
-                        && container.has(e.target).length === 0) {
+                    // Don't hide if clicking on an input that should show the dropdown
+                    var isInputClick = $(e.target).is('input[name="type[]"]') ||
+                                     $(e.target).is('input[name="name[]"]') ||
+                                     $(e.target).is('input[name="validation[]"]');
+
+                    if (!container.is(e.target) &&
+                        container.has(e.target).length === 0 &&
+                        !isInputClick) {
                         container.hide();
                     }
                 });
@@ -218,7 +281,6 @@
                     var v = $(this).text();
                     var t = $(this).parent('ul').parent('td');
                     var tr_index = parseInt(t.parent().index());
-                    console.log(tr_index);
 
                     var input_name = $(this).parent().parent('td').find('input[type=text]').attr('name');
 

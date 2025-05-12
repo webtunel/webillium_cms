@@ -571,10 +571,40 @@ class ModulsController extends CBController
             eval($column_datas);
         }
 
+        // Get all available field types
         $types = [];
-        foreach (glob(base_path('vendor/crocodicstudio/crudbooster/src/views/default/type_components').'/*', GLOB_ONLYDIR) as $dir) {
-            $types[] = basename($dir);
+        $fallback_types = ['text', 'textarea', 'select', 'checkbox', 'radio', 'number', 'date', 'time', 'datetime', 'email', 'password', 'hidden'];
+
+        try {
+            // First try the package location
+            $package_path = base_path('vendor/webtunel/webilliumcms/src/views/default/type_components');
+            if (is_dir($package_path)) {
+                foreach (glob($package_path.'/*', GLOB_ONLYDIR) as $dir) {
+                    $types[] = basename($dir);
+                }
+            }
+
+            // Then try the original CRUDBooster location as a fallback
+            if (empty($types)) {
+                $original_path = base_path('vendor/crocodicstudio/crudbooster/src/views/default/type_components');
+                if (is_dir($original_path)) {
+                    foreach (glob($original_path.'/*', GLOB_ONLYDIR) as $dir) {
+                        $types[] = basename($dir);
+                    }
+                }
+            }
+        } catch (\Exception $e) {
+            // Log the error but continue
+            \Log::error('Failed to get field types: ' . $e->getMessage());
         }
+
+        // If both methods fail, use the fallback types
+        if (empty($types)) {
+            $types = $fallback_types;
+        }
+
+        // Sort the types alphabetically
+        sort($types);
 
         return view('crudbooster::module_generator.step3', compact('columns', 'cb_form', 'types', 'id'));
     }
@@ -582,7 +612,35 @@ class ModulsController extends CBController
     public function getTypeInfo($type = 'text')
     {
         header("Content-Type: application/json");
-        echo file_get_contents(base_path('vendor/crocodicstudio/crudbooster/src/views/default/type_components/'.$type.'/info.json'));
+
+        // Try to find info.json file in multiple possible locations
+        $paths = [
+            // Package path
+            base_path('vendor/webtunel/webilliumcms/src/views/default/type_components/'.$type.'/info.json'),
+            // Original CRUDBooster path
+            base_path('vendor/crocodicstudio/crudbooster/src/views/default/type_components/'.$type.'/info.json')
+        ];
+
+        foreach ($paths as $path) {
+            if (file_exists($path)) {
+                echo file_get_contents($path);
+                return;
+            }
+        }
+
+        // If no info.json found, return a default structure
+        echo json_encode([
+            "title" => ucfirst($type),
+            "alert" => "This is a basic {$type} input field",
+            "attribute" => [
+                "required" => [
+                    "placeholder" => "Enter placeholder text"
+                ],
+                "optional" => [
+                    "readonly" => "true/false"
+                ]
+            ]
+        ]);
     }
 
     public function postStep4()

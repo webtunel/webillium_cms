@@ -513,6 +513,20 @@ $total = $result->total();
 
                             <div id='advanced_export' style='display: none'>
 
+                                <?php
+                                // Define default setting object with default values
+                                $setting = (object) ['default_paper_size' => 'A4'];
+
+                                // Try to get actual settings from database if available
+                                try {
+                                    $db_setting = DB::table('cms_settings')->where('name', 'default_paper_size')->first();
+                                    if ($db_setting) {
+                                        $setting->default_paper_size = $db_setting->content;
+                                    }
+                                } catch (\Exception $e) {
+                                    // Keep default if error occurs
+                                }
+                                ?>
 
                                 <div class="form-group">
                                     <label>{{cbLang("export_dialog_page_size")}}</label>

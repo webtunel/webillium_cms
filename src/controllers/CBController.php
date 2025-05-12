@@ -403,7 +403,7 @@ class CBController extends Controller
             $filter_column = request('filter_column');
             $result->where(function ($w) use ($filter_column) {
                 foreach ($filter_column as $key => $fc) {
-                    if (!is_array($fc)) continue;
+                    if (!is_array($fc) || !isset($fc['type'])) continue;
 
                     $value = isset($fc['value']) ? $fc['value'] : '';
                     $type = isset($fc['type']) ? $fc['type'] : '';
@@ -429,6 +429,8 @@ class CBController extends Controller
                             break;
                         case 'like':
                         case 'not like':
+                            // Ensure value is a string before concatenation
+                            $value = (string)$value;
                             $value = '%'.$value.'%';
                             if ($key && $type && $value) {
                                 $w->where($key, $type, $value);
@@ -448,7 +450,7 @@ class CBController extends Controller
             });
 
             foreach ($filter_column as $key => $fc) {
-                if (!is_array($fc)) continue;
+                if (!is_array($fc) || !isset($fc['type'])) continue;
 
                 $value = isset($fc['value']) ? $fc['value'] : '';
                 $type = isset($fc['type']) ? $fc['type'] : '';
@@ -462,7 +464,7 @@ class CBController extends Controller
                 }
 
                 if ($type == 'between') {
-                    if ($key && $value) {
+                    if ($key && is_array($value) && isset($value[0]) && isset($value[1])) {
                         $result->whereBetween($key, $value);
                     }
                 } else {

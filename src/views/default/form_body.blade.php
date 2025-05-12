@@ -3,7 +3,7 @@
 //Loading Assets
 $asset_already = [];
 foreach($forms as $form) {
-$type = @$form['type'] ?: 'text';
+$type = isset($form['type']) ? $form['type'] : 'text';
 $name = $form['name'];
 
 if (in_array($type, $asset_already)) continue;
@@ -57,8 +57,8 @@ if ($join && @$row) {
     $join_query_[$join_table] = DB::table($join_table)->select($join_title)->where("id", $row->{'id_'.$join_table})->first();
     $value = @$join_query_[$join_table]->{$join_title};
 }
-$form['type'] = ($form['type']) ?: 'text';
-$type = @$form['type'];
+$form['type'] = isset($form['type']) ? $form['type'] : 'text';
+$type = $form['type'];
 $required = (@$form['required']) ? "required" : "";
 $required = (@strpos($form['validation'], 'required') !== FALSE) ? "required" : $required;
 $readonly = (@$form['readonly']) ? "readonly" : "";

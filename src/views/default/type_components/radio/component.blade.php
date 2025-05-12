@@ -10,6 +10,7 @@
         @endif
 
         @if(isset($form['dataenum']) && $form['dataenum']!='')
+            <div class="custom-switches-stacked mt-2">
             <?php
             @$value = explode(";", $value);
             @array_walk($value, 'trim');
@@ -24,14 +25,15 @@
                 } else {
                     $val = $label = $d;
                 }
-				$checked = ( ($value && in_array($val, $value)) || (CRUDBooster::isCreate() && ($k==0 && isset($form['validation']) && $form['validation'])) ) ? "checked" : "";
+					$checked = ( ($value && in_array($val, $value)) || (CRUDBooster::isCreate() && ($k==0 && isset($form['validation']) && $form['validation'])) ) ? "checked" : "";
                 ?>
-                <div class=" {{$disabled}}">
-                    <label class='radio-inline'>
-                        <input type="radio" {{$disabled}} {{$checked}} name="{{$name}}" value="{{$val}}"> {{$label}}
-                    </label>
-                </div>
+                <label class="custom-switch {{$disabled}}">
+                    <input type="radio" class="custom-switch-input" {{$disabled}} {{$checked}} name="{{$name}}" value="{{$val}}">
+                    <span class="custom-switch-indicator"></span>
+                    <span class="custom-switch-description">{{$label}}</span>
+                </label>
             @endforeach
+            </div>
         @endif
 
         <?php
@@ -68,6 +70,7 @@
             $selects_data->addselect($select_field.' as '.$select_field_alias);
             $selects_data = $selects_data->orderby(end($tables).'.'.$datatable_field, "asc")->get();
 
+            echo "<div class='custom-switches-stacked mt-2'>";
             foreach ($selects_data as $d) {
                 $val = $d->{$select_field_alias};
                 if ($val == '' || ! $d->id) continue;
@@ -75,27 +78,30 @@
                 $checked = ($value == $d->id) ? "checked" : "";
 
                 echo "
-												<div data-val='$val' class='input-radio-wrapper $disabled'>
-												  <label class='radio-inline'>
-												    <input type='radio' $disabled $checked name='".$name."' value='".$d->id."'> ".$val."
-												  </label>
-												</div>";
+                <label class='custom-switch $disabled'>
+                    <input type='radio' class='custom-switch-input' $disabled $checked name='".$name."' value='".$d->id."'>
+                    <span class='custom-switch-indicator'></span>
+                    <span class='custom-switch-description'>".$val."</span>
+                </label>";
             }
+            echo "</div>";
 
         endif;
         if (isset($form['dataquery']) && $form['dataquery']) {
             $query = DB::select(DB::raw($form['dataquery']));
             if ($query) {
+                echo "<div class='custom-switches-stacked mt-2'>";
                 foreach ($query as $q) {
                     $checked = ($value == $q->value) ? "checked" : "";
                     // Fix undefined variable
                     $display_val = isset($q->value) ? $q->value : '';
-                    echo "<div data-val='".$display_val."' class=' $disabled'>
-																	<label class='radio-inline'>
-																		<input type='radio' $disabled $checked name='".$name."' value='".$q->value."'> ".$q->label."
-																	</label>
-																	</div>";
+                    echo "<label class='custom-switch $disabled'>
+                        <input type='radio' class='custom-switch-input' $disabled $checked name='".$name."' value='".$q->value."'>
+                        <span class='custom-switch-indicator'></span>
+                        <span class='custom-switch-description'>".$q->label."</span>
+                    </label>";
                 }
+                echo "</div>";
             }
         }
         ?>

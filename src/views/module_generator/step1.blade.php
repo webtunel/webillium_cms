@@ -60,14 +60,14 @@
         <div class="box-body">
             <form method="post" action="{{Route('ModulsControllerPostStep2')}}">
                 <input type="hidden" name="_token" value="{{csrf_token()}}">
-                <input type="hidden" name="id" value="{{$row->id}}">
+                <input type="hidden" name="id" value="{{$row->id ?? ''}}">
                 <div class="form-group">
                     <label for="">Table</label>
-                    <select name="table" id="table" required class="form-control form-control-sm" value="{{$row->table_name}}">
+                    <select name="table" id="table" required class="form-control form-control-sm" value="{{$row->table_name ?? ''}}">
                         <option value="">{{cbLang('text_prefix_option')}} Table</option>
                         @foreach($tables_list as $table)
 
-                            <option {{($table == $row->table_name)?"selected":""}} value="{{$table}}">{{$table}}</option>
+                            <option {{($table == ($row->table_name ?? ''))?"selected":""}} value="{{$table}}">{{$table}}</option>
 
                         @endforeach
                     </select>
@@ -77,20 +77,20 @@
                 </div>
                 <div class="form-group">
                     <label for="">Module Name</label>
-                    <input type="text" class="form-control" required name="name" value="{{$row->name}}">
+                    <input type="text" class="form-control" required name="name" value="{{$row->name ?? ''}}">
                 </div>
 
                 <div class="form-group">
                     <label for="">Icon</label>
                     <select name="icon" id="icon" required class="form-control form-control-sm">
                         @foreach($fontawesome as $f)
-                            <option {{($row->icon == 'fa fa-'.$f)?"selected":""}} value="fa fa-{{$f}}">{{$f}}</option>
+                            <option {{(($row->icon ?? '') == 'fa fa-'.$f)?"selected":""}} value="fa fa-{{$f}}">{{$f}}</option>
                         @endforeach
                     </select>
                 </div>
                 <div class="form-group">
                     <label for="">Module Slug</label>
-                    <input type="text" class="form-control" required name="path" value="{{$row->path}}">
+                    <input type="text" class="form-control" required name="path" value="{{$row->path ?? ''}}">
                     <div class="help-block">Please alpha numeric only, without space instead _ and or special character</div>
                 </div>
         </div>

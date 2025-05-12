@@ -307,31 +307,31 @@
                     </tr>
                     </thead>
                     <tbody>
-                    @if($cb_col)
+                    @if(isset($cb_col) && $cb_col)
                         @foreach($cb_col as $c)
                             <tr>
-                                <td><input value='{{$c["label"]}}' type='text' name='column[]' onclick='showColumnSuggest(this)'
+                                <td><input value='{{$c["label"] ?? ""}}' type='text' name='column[]' onclick='showColumnSuggest(this)'
                                            onKeyUp='showColumnSuggestLike(this)' placeholder='Column Name' class='column form-control notfocus' value=''/></td>
-                                <td><input value='{{$c["name"]}}' type='text' name='name[]' onclick='showNameSuggest(this)' onKeyUp='showNameSuggestLike(this)'
+                                <td><input value='{{$c["name"] ?? ""}}' type='text' name='name[]' onclick='showNameSuggest(this)' onKeyUp='showNameSuggestLike(this)'
                                            placeholder='Field Name' class='name form-control notfocus' value=''/></td>
-                                <td><input value='{{ @explode(",",$c["join"])[0] }}' type='text' name='join_table[]' onclick='showTable(this)'
+                                <td><input value='{{ @explode(",",($c["join"] ?? ""))[0] }}' type='text' name='join_table[]' onclick='showTable(this)'
                                            onKeyUp='showTableLike(this)' placeholder='Table Name' class='join_table form-control notfocus' value=''/></td>
-                                <td><input value='{{ @explode(",",$c["join"])[1] }}' type='text' name='join_field[]' onclick='showTableField(this)'
+                                <td><input value='{{ @explode(",",($c["join"] ?? ""))[1] }}' type='text' name='join_field[]' onclick='showTableField(this)'
                                            onKeyUp='showTableFieldLike(this)' placeholder='Field Name Shown' class='join_field form-control notfocus' value=''/>
                                 </td>
-                                <td><input type='text' name='callbackphp[]' class='form-control callbackphp notfocus' value='{{$c["callback_php"]}}'
+                                <td><input type='text' name='callbackphp[]' class='form-control callbackphp notfocus' value='{{$c["callback_php"] ?? ""}}'
                                            placeholder="Optional"/></td>
-                                <td><input style="width:70px;" value='{{$c["width"]?:0}}' type='number' name='width[]' class='form-control'/></td>
+                                <td><input style="width:70px;" value='{{($c["width"] ?? 0) ? : 0}}' type='number' name='width[]' class='form-control'/></td>
                                 <td>
                                     <select class='form-control is_image' name='is_image[]' style="width:70px;">
-                                        <option {{ (!$c['image'])?"selected":""}} value='0'>N</option>
-                                        <option {{ ($c['image'])?"selected":""}} value='1'>Y</option>
+                                        <option {{ (!(isset($c['image']) && $c['image']))?"selected":""}} value='0'>N</option>
+                                        <option {{ (isset($c['image']) && $c['image'])?"selected":""}} value='1'>Y</option>
                                     </select>
                                 </td>
                                 <td>
                                     <select class='form-control is_download' name='is_download[]'>
-                                        <option {{ (!$c['download'])?"selected":""}} value='0'>N</option>
-                                        <option {{ ($c['download'])?"selected":""}} value='1'>Y</option>
+                                        <option {{ (!(isset($c['download']) && $c['download']))?"selected":""}} value='0'>N</option>
+                                        <option {{ (isset($c['download']) && $c['download'])?"selected":""}} value='1'>Y</option>
                                     </select>
                                 </td>
                                 <td>

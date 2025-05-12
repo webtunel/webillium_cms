@@ -30,14 +30,14 @@
                     <div class="col-sm-12">
                         <div class="form-group">
                             <label>Title Field Candidate</label>
-                            <input type="text" name="title_field" value="{{$cb_title_field}}" class='form-control'>
+                            <input type="text" name="title_field" value="{{$cb_title_field ?? ''}}" class='form-control'>
                         </div>
                     </div>
 
                     <div class="col-sm-5">
                         <div class="form-group">
                             <label>Limit Data</label>
-                            <input type="number" name="limit" value="{{$cb_limit}}" class='form-control'>
+                            <input type="number" name="limit" value="{{$cb_limit ?? ''}}" class='form-control'>
                         </div>
                     </div>
 
@@ -45,14 +45,18 @@
                         <div class="form-group">
                             <label>Order By</label>
                             <?php
-                            if (is_array($cb_orderby)) {
-                                $orderby = [];
-                                foreach ($cb_orderby as $k => $v) {
-                                    $orderby[] = $k.','.$v;
+                            if (isset($cb_orderby)) {
+                                if (is_array($cb_orderby)) {
+                                    $orderby = [];
+                                    foreach ($cb_orderby as $k => $v) {
+                                        $orderby[] = $k.','.$v;
+                                    }
+                                    $orderby = implode(";", $orderby);
+                                } else {
+                                    $orderby = $cb_orderby;
                                 }
-                                $orderby = implode(";", $orderby);
                             } else {
-                                $orderby = $cb_orderby;
+                                $orderby = '';
                             }
                             ?>
                             <input type="text" name="orderby" value="{{$orderby}}" class='form-control'>
@@ -67,12 +71,12 @@
                                 <label>Global Privilege</label>
                                 <div class="row">
                                     <label class="custom-switch">
-                                        <input type="radio" class="custom-switch-input" name='global_privilege' {{($cb_global_privilege)?"checked":""}} value='true'>
+                                        <input type="radio" class="custom-switch-input" name='global_privilege' {{(isset($cb_global_privilege) && $cb_global_privilege)?"checked":""}} value='true'>
                                         <span class="custom-switch-indicator"></span>
                                         <span class="custom-switch-description">TRUE</span>
                                     </label>
                                     <label class="custom-switch">
-                                        <input type="radio" {{(!$cb_global_privilege)?"checked":""}} name='global_privilege' value='false' class="custom-switch-input">
+                                        <input type="radio" {{(isset($cb_global_privilege) && !$cb_global_privilege)?"checked":"checked"}} name='global_privilege' value='false' class="custom-switch-input">
                                         <span class="custom-switch-indicator"></span>
                                         <span class="custom-switch-description">FALSE</span>
                                     </label>
@@ -83,12 +87,12 @@
                                 <label>Show Button Table Action</label>
                                 <div class="row">
                                     <label class="custom-switch">
-                                        <input type="radio" class="custom-switch-input" name='button_table_action' {{($cb_button_table_action)?"checked":""}} value='true'>
+                                        <input type="radio" class="custom-switch-input" name='button_table_action' {{(isset($cb_button_table_action) && $cb_button_table_action)?"checked":""}} value='true'>
                                         <span class="custom-switch-indicator"></span>
                                         <span class="custom-switch-description">TRUE</span>
                                     </label>
                                     <label class="custom-switch">
-                                        <input type="radio" {{(!$cb_button_table_action)?"checked":""}} name='button_table_action' value='false' class="custom-switch-input">
+                                        <input type="radio" {{(isset($cb_button_table_action) && !$cb_button_table_action)?"checked":"checked"}} name='button_table_action' value='false' class="custom-switch-input">
                                         <span class="custom-switch-indicator"></span>
                                         <span class="custom-switch-description">FALSE</span>
                                     </label>
@@ -99,12 +103,12 @@
                                 <label>Show Bulk Action Button</label>
                                 <div class="row">
                                     <label class="custom-switch">
-                                        <input type="radio" class="custom-switch-input" name='button_bulk_action' {{($cb_button_bulk_action)?"checked":""}} value='true'>
+                                        <input type="radio" class="custom-switch-input" name='button_bulk_action' {{(isset($cb_button_bulk_action) && $cb_button_bulk_action)?"checked":""}} value='true'>
                                         <span class="custom-switch-indicator"></span>
                                         <span class="custom-switch-description">TRUE</span>
                                     </label>
                                     <label class="custom-switch">
-                                        <input type="radio" {{(!$cb_button_bulk_action)?"checked":""}} name='button_bulk_action' value='false' class="custom-switch-input">
+                                        <input type="radio" {{(isset($cb_button_bulk_action) && !$cb_button_bulk_action)?"checked":"checked"}} name='button_bulk_action' value='false' class="custom-switch-input">
                                         <span class="custom-switch-indicator"></span>
                                         <span class="custom-switch-description">FALSE</span>
                                     </label>
@@ -115,22 +119,22 @@
                                 <label>Button Action Style</label>
                                 <div class="row">
                                     <label class="custom-switch">
-                                        <input type="radio" {{($cb_button_action_style=='button_icon')?"checked":""}} name='button_action_style' value='false' class="custom-switch-input">
+                                        <input type="radio" {{(isset($cb_button_action_style) && $cb_button_action_style=='button_icon')?"checked":""}} name='button_action_style' value='button_icon' class="custom-switch-input">
                                         <span class="custom-switch-indicator"></span>
                                         <span class="custom-switch-description">Icon</span>
                                     </label>
                                     <label class="custom-switch">
-                                        <input type="radio" {{($cb_button_action_style=='button_icon_text')?"checked":""}} name='button_action_style' value='false' class="custom-switch-input">
+                                        <input type="radio" {{(isset($cb_button_action_style) && $cb_button_action_style=='button_icon_text')?"checked":""}} name='button_action_style' value='button_icon_text' class="custom-switch-input">
                                         <span class="custom-switch-indicator"></span>
                                         <span class="custom-switch-description">Icon & Text</span>
                                     </label>
                                     <label class="custom-switch">
-                                        <input type="radio" {{($cb_button_action_style=='button_text')?"checked":""}} name='button_action_style' value='false' class="custom-switch-input">
+                                        <input type="radio" {{(isset($cb_button_action_style) && $cb_button_action_style=='button_text')?"checked":""}} name='button_action_style' value='button_text' class="custom-switch-input">
                                         <span class="custom-switch-indicator"></span>
                                         <span class="custom-switch-description">Button Text</span>
                                     </label>
                                     <label class="custom-switch">
-                                        <input type="radio" {{($cb_button_action_style=='button_dropdown')?"checked":""}} name='button_action_style' value='false' class="custom-switch-input">
+                                        <input type="radio" {{(isset($cb_button_action_style) && $cb_button_action_style=='button_dropdown')?"checked":"checked"}} name='button_action_style' value='button_dropdown' class="custom-switch-input">
                                         <span class="custom-switch-indicator"></span>
                                         <span class="custom-switch-description">Dropdown</span>
                                     </label>
@@ -142,12 +146,12 @@
                                 <label>Show Button Add</label>
                                 <div class="row">
                                     <label class="custom-switch">
-                                        <input type="radio" class="custom-switch-input" name='button_add' {{($cb_button_add)?"checked":""}} value='true'>
+                                        <input type="radio" class="custom-switch-input" name='button_add' {{(isset($cb_button_add) && $cb_button_add)?"checked":""}} value='true'>
                                         <span class="custom-switch-indicator"></span>
                                         <span class="custom-switch-description">TRUE</span>
                                     </label>
                                     <label class="custom-switch">
-                                        <input type="radio" {{(!$cb_button_add)?"checked":""}} name='button_add' value='false' class="custom-switch-input">
+                                        <input type="radio" {{(isset($cb_button_add) && !$cb_button_add)?"checked":"checked"}} name='button_add' value='false' class="custom-switch-input">
                                         <span class="custom-switch-indicator"></span>
                                         <span class="custom-switch-description">FALSE</span>
                                     </label>
@@ -158,12 +162,12 @@
                                 <label>Show Button Edit</label>
                                 <div class="row">
                                     <label class="custom-switch">
-                                        <input type="radio" {{($cb_button_edit)?"checked":""}} name='button_edit' class="custom-switch-input"  value='true'>
+                                        <input type="radio" {{(isset($cb_button_edit) && $cb_button_edit)?"checked":""}} name='button_edit' class="custom-switch-input"  value='true'>
                                         <span class="custom-switch-indicator"></span>
                                         <span class="custom-switch-description">TRUE</span>
                                     </label>
                                     <label class="custom-switch">
-                                        <input type="radio" {{(!$cb_button_edit)?"checked":""}} name='button_edit' value='false' class="custom-switch-input">
+                                        <input type="radio" {{(isset($cb_button_edit) && !$cb_button_edit)?"checked":"checked"}} name='button_edit' value='false' class="custom-switch-input">
                                         <span class="custom-switch-indicator"></span>
                                         <span class="custom-switch-description">FALSE</span>
                                     </label>
@@ -174,12 +178,12 @@
                                 <label>Show Button Delete</label>
                                 <div class="row">
                                     <label class="custom-switch">
-                                        <input type="radio" {{($cb_button_delete)?"checked":""}} name='button_delete' class="custom-switch-input"  value='true'>
+                                        <input type="radio" {{(isset($cb_button_delete) && $cb_button_delete)?"checked":""}} name='button_delete' class="custom-switch-input"  value='true'>
                                         <span class="custom-switch-indicator"></span>
                                         <span class="custom-switch-description">TRUE</span>
                                     </label>
                                     <label class="custom-switch">
-                                        <input type="radio" {{(!$cb_button_delete)?"checked":""}} name='button_delete' value='false' class="custom-switch-input">
+                                        <input type="radio" {{(isset($cb_button_delete) && !$cb_button_delete)?"checked":"checked"}} name='button_delete' value='false' class="custom-switch-input">
                                         <span class="custom-switch-indicator"></span>
                                         <span class="custom-switch-description">FALSE</span>
                                     </label>
@@ -190,12 +194,12 @@
                                 <label>Show Button Detail</label>
                                 <div class="row">
                                     <label class="custom-switch">
-                                        <input type="radio" {{($cb_button_detail)?"checked":""}} name='button_detail' class="custom-switch-input"  value='true'>
+                                        <input type="radio" {{(isset($cb_button_detail) && $cb_button_detail)?"checked":""}} name='button_detail' class="custom-switch-input"  value='true'>
                                         <span class="custom-switch-indicator"></span>
                                         <span class="custom-switch-description">TRUE</span>
                                     </label>
                                     <label class="custom-switch">
-                                        <input type="radio" {{(!$cb_button_detail)?"checked":""}} name='button_detail' value='false' class="custom-switch-input">
+                                        <input type="radio" {{(isset($cb_button_detail) && !$cb_button_detail)?"checked":"checked"}} name='button_detail' value='false' class="custom-switch-input">
                                         <span class="custom-switch-indicator"></span>
                                         <span class="custom-switch-description">FALSE</span>
                                     </label>
@@ -207,12 +211,12 @@
                                 <label>Show Button Show Data</label>
                                 <div class="row">
                                     <label class="custom-switch">
-                                        <input type="radio" {{($cb_button_show)?"checked":""}} name='button_show' class="custom-switch-input"  value='true'>
+                                        <input type="radio" {{(isset($cb_button_show) && $cb_button_show)?"checked":""}} name='button_show' class="custom-switch-input"  value='true'>
                                         <span class="custom-switch-indicator"></span>
                                         <span class="custom-switch-description">TRUE</span>
                                     </label>
                                     <label class="custom-switch">
-                                        <input type="radio" {{(!$cb_button_show)?"checked":""}} name='button_show' value='false' class="custom-switch-input">
+                                        <input type="radio" {{(isset($cb_button_show) && !$cb_button_show)?"checked":"checked"}} name='button_show' value='false' class="custom-switch-input">
                                         <span class="custom-switch-indicator"></span>
                                         <span class="custom-switch-description">FALSE</span>
                                     </label>
@@ -224,12 +228,12 @@
 
                                 <div class="row">
                                     <label class="custom-switch">
-                                        <input type="radio" {{($cb_button_filter)?"checked":""}} name='button_filter' class="custom-switch-input"  value='true'>
+                                        <input type="radio" {{(isset($cb_button_filter) && $cb_button_filter)?"checked":""}} name='button_filter' class="custom-switch-input"  value='true'>
                                         <span class="custom-switch-indicator"></span>
                                         <span class="custom-switch-description">TRUE</span>
                                     </label>
                                     <label class="custom-switch">
-                                        <input type="radio" {{(!$cb_button_filter)?"checked":""}} name='button_filter' value='false' class="custom-switch-input">
+                                        <input type="radio" {{(isset($cb_button_filter) && !$cb_button_filter)?"checked":"checked"}} name='button_filter' value='false' class="custom-switch-input">
                                         <span class="custom-switch-indicator"></span>
                                         <span class="custom-switch-description">FALSE</span>
                                     </label>
@@ -240,12 +244,12 @@
                                 <label>Show Button Import</label>
                                 <div class="row">
                                     <label class="custom-switch">
-                                        <input type="radio" {{($cb_button_import)?"checked":""}} name='button_import' class="custom-switch-input"  value='true'>
+                                        <input type="radio" {{(isset($cb_button_import) && $cb_button_import)?"checked":""}} name='button_import' class="custom-switch-input"  value='true'>
                                         <span class="custom-switch-indicator"></span>
                                         <span class="custom-switch-description">TRUE</span>
                                     </label>
                                     <label class="custom-switch">
-                                        <input type="radio" {{(!$cb_button_import)?"checked":""}} name='button_import' value='false' class="custom-switch-input">
+                                        <input type="radio" {{(isset($cb_button_import) && !$cb_button_import)?"checked":"checked"}} name='button_import' value='false' class="custom-switch-input">
                                         <span class="custom-switch-indicator"></span>
                                         <span class="custom-switch-description">FALSE</span>
                                     </label>
@@ -256,12 +260,12 @@
                                 <label>Show Button Export</label>
                                 <div class="row">
                                     <label class="custom-switch">
-                                        <input type="radio" {{($cb_button_export)?"checked":""}} name='button_export' class="custom-switch-input"  value='true'>
+                                        <input type="radio" {{(isset($cb_button_export) && $cb_button_export)?"checked":""}} name='button_export' class="custom-switch-input"  value='true'>
                                         <span class="custom-switch-indicator"></span>
                                         <span class="custom-switch-description">TRUE</span>
                                     </label>
                                     <label class="custom-switch">
-                                        <input type="radio" {{(!$cb_button_export)?"checked":""}} name='button_export' value='false' class="custom-switch-input">
+                                        <input type="radio" {{(isset($cb_button_export) && !$cb_button_export)?"checked":"checked"}} name='button_export' value='false' class="custom-switch-input">
                                         <span class="custom-switch-indicator"></span>
                                         <span class="custom-switch-description">FALSE</span>
                                     </label>

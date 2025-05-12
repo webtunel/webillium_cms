@@ -445,21 +445,21 @@
                     </thead>
                     <tbody>
                     <?php $index = 0;?>
-                    @foreach($cb_form as $form)
+                    @foreach($cb_form ?? [] as $form)
                         <tr>
-                            <td><input type='text' value='{{$form["label"]}}' placeholder="Input field label" onclick='showColumnSuggest(this)'
+                            <td><input type='text' value='{{$form["label"] ?? ""}}' placeholder="Input field label" onclick='showColumnSuggest(this)'
                                        onkeyup="showColumnSuggestLike(this)" class='form-control labels' name='label[]'/></td>
-                            <td><input type='text' value='{{$form["name"]}}' placeholder="Input field name" onclick='showNameSuggest(this)'
+                            <td><input type='text' value='{{$form["name"] ?? ""}}' placeholder="Input field name" onclick='showNameSuggest(this)'
                                        onkeyup="showNameSuggestLike(this)" class='form-control name' name='name[]'/></td>
-                            <td><input type='text' value='{{$form["type"]?:"text"}}' placeholder="Input field type" onclick='showTypeSuggest(this)'
+                            <td><input type='text' value='{{($form["type"] ?? "")?"text"}}' placeholder="Input field type" onclick='showTypeSuggest(this)'
                                        onkeyup="showTypeSuggestLike(this)" class='form-control type' name='type[]'/></td>
-                            <td><input type='text' value='{{$form["validation"]}}' class='form-control validation' onclick="showValidationSuggest(this)"
+                            <td><input type='text' value='{{$form["validation"] ?? ""}}' class='form-control validation' onclick="showValidationSuggest(this)"
                                        onkeyup="showValidationSuggestLike(this)" name='validation[]' value='required' placeholder='Enter Laravel Validation'/>
                             </td>
                             <td>
                                 <select class='form-control width' name='width[]' style="width: 70px;">
                                     @for($i=10;$i>=1;$i--)
-                                        <option {{ ($form['width'] == "col-sm-$i")?"selected":"" }} value='col-sm-{{$i}}'>{{$i}}</option>
+                                        <option {{ (isset($form['width']) && $form['width'] == "col-sm-$i")?"selected":"" }} value='col-sm-{{$i}}'>{{$i}}</option>
                                     @endfor
                                 </select>
                             </td>
@@ -468,10 +468,14 @@
                                 <div class='option_area' style="display: none">
                                     <?php
 
-                                    $type = $form["type"] ?: "text";
-                                    $types = base_path('vendor/crocodicstudio/crudbooster/src/views/default/type_components/'.$type.'/info.json');
-                                    $types = file_get_contents($types);
-                                    $types = json_decode($types);
+                                    $type = isset($form["type"]) ? ($form["type"] ?: "text") : "text";
+                                    $types_path = base_path('vendor/crocodicstudio/crudbooster/src/views/default/type_components/'.$type.'/info.json');
+                                    if(file_exists($types_path)) {
+                                        $types = file_get_contents($types_path);
+                                        $types = json_decode($types);
+                                    } else {
+                                        $types = null;
+                                    }
 
                                     if($types):
                                     ?>
@@ -483,12 +487,12 @@
                                     @endif
 
                                     <?php
-                                    if($types->attribute->required):
+                                    if(isset($types->attribute->required)):
                                     foreach($types->attribute->required as $key=>$val):
-                                    @$value = $form[$key];
+                                    @$value = isset($form[$key]) ? $form[$key] : '';
                                     if(is_object($val)):
 
-                                    if($val->type && $val->type == 'radio'):
+                                    if(isset($val->type) && $val->type == 'radio'):
                                     ?>
                                     <div class="form-group">
                                         <label>{{$key}}</label>
@@ -520,9 +524,9 @@
 
 
                                     <?php
-                                    if($types->attribute->requiredOne):
+                                    if(isset($types->attribute->requiredOne)):
                                     foreach($types->attribute->requiredOne as $key=>$val):
-                                    @$value = $form[$key];
+                                    @$value = isset($form[$key]) ? $form[$key] : '';
                                     ?>
                                     <div class="form-group">
                                         <label>{{$key}}</label>
@@ -531,9 +535,9 @@
                                     <?php endforeach; endif;?>
 
                                     <?php
-                                    if($types->attribute->optional):
+                                    if(isset($types->attribute->optional)):
                                     foreach($types->attribute->optional as $key=>$val):
-                                    @$value = $form[$key];
+                                    @$value = isset($form[$key]) ? $form[$key] : '';
 
                                     ?>
                                     <div class="form-group">

@@ -254,7 +254,18 @@ class ModulsController extends CBController
 
         $fontawesome = Fontawesome::getIcons();
 
-        $row = CRUDBooster::first($this->table, ['id' => $id]);
+        // Initialize $row as empty object if id=0 or fetch from DB if id exists
+        if ($id === 0 || $id === '0') {
+            $row = (object)[
+                'id' => null,
+                'name' => '',
+                'table_name' => '',
+                'icon' => 'fa fa-cog',
+                'path' => '',
+            ];
+        } else {
+            $row = CRUDBooster::first($this->table, ['id' => $id]);
+        }
 
         return view("crudbooster::module_generator.step1", compact("tables_list", "fontawesome", "row", "id"));
     }

@@ -176,7 +176,7 @@ class ModulsController extends CBController
             'label' => 'Module Wizard',
             'icon' => 'fa fa-wrench',
             'url' => CRUDBooster::mainpath('step1').'/[id]',
-            "showIf" => "[is_protected] == 0",
+            // Removed the showIf condition to allow Module Wizard for all modules
         ];
 
         $this->index_button[] = ['label' => 'Generate New Module', 'icon' => 'fa fa-plus', 'url' => CRUDBooster::mainpath('step1'), 'color' => 'success'];
@@ -184,7 +184,8 @@ class ModulsController extends CBController
 
     function hook_query_index(&$query)
     {
-        $query->where('is_protected', 0);
+        // Allow all modules to be shown, including protected ones
+        // $query->where('is_protected', 0);
         $query->whereNotIn('cms_moduls.controller', ['AdminCmsUsersController']);
     }
 

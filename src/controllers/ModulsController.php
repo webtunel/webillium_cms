@@ -61,7 +61,8 @@ class ModulsController extends CBController
 
         $fontawesome = Fontawesome::getIcons();
 
-        $row = CRUDBooster::first($this->table, CRUDBooster::getCurrentId());
+        $id = CRUDBooster::getCurrentId();
+        $row = $id ? CRUDBooster::first($this->table, $id) : null;
         $custom = view('crudbooster::components.list_icon', compact('fontawesome', 'row'))->render();
         $this->form[] = ['label' => 'Icon', 'name' => 'icon', 'type' => 'custom', 'html' => $custom, 'required' => true];
 

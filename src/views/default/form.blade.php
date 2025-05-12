@@ -34,7 +34,7 @@
                             @endif
                             <div class="box-body" id="parent-form-area">
 
-                                @if($command == 'detail')
+                                @if(isset($command) && $command == 'detail')
                                     @include("crudbooster::default.form_detail")
                                 @else
                                     @include("crudbooster::default.form_body")
@@ -55,11 +55,11 @@
                                     @endif
                                     @if(CRUDBooster::isCreate() || CRUDBooster::isUpdate())
 
-                                        @if(CRUDBooster::isCreate() && $button_addmore==TRUE && $command == 'add')
+                                        @if(CRUDBooster::isCreate() && $button_addmore==TRUE && (isset($command) && $command == 'add'))
                                             <input type="submit" name="submit" value='{{cbLang("button_save_more")}}' class='btn btn-success'>
                                         @endif
 
-                                        @if($button_save && $command != 'detail')
+                                        @if($button_save && (!isset($command) || $command != 'detail'))
                                             <input type="submit" name="submit" value='{{cbLang("button_save")}}' class='btn btn-success'>
                                         @endif
 

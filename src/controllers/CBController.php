@@ -1016,21 +1016,21 @@ class CBController extends Controller
                 }
             }
 
-            if ($ro['type'] == 'checkbox' && $ro['relationship_table']) {
+            if (isset($ro['type']) && $ro['type'] == 'checkbox' && isset($ro['relationship_table']) && $ro['relationship_table']) {
                 continue;
             }
 
-            if ($ro['type'] == 'select2' && $ro['relationship_table']) {
+            if (isset($ro['type']) && $ro['type'] == 'select2' && isset($ro['relationship_table']) && $ro['relationship_table']) {
                 continue;
             }
 
             $inputdata = request($name);
 
-            if ($ro['type'] == 'money') {
+            if (isset($ro['type']) && $ro['type'] == 'money') {
                 $inputdata = preg_replace('/[^\d-]+/', '', $inputdata);
             }
 
-            if ($ro['type'] == 'child') {
+            if (isset($ro['type']) && $ro['type'] == 'child') {
                 continue;
             }
 
@@ -1038,7 +1038,7 @@ class CBController extends Controller
                 if ($inputdata != '') {
                     $this->arr[$name] = $inputdata;
                 } else {
-                    if (CB::isColumnNULL($this->table, $name) && $ro['type'] != 'upload') {
+                    if (CB::isColumnNULL($this->table, $name) && (!isset($ro['type']) || (isset($ro['type']) && $ro['type'] != 'upload'))) {
                         continue;
                     } else {
                         $this->arr[$name] = "";
@@ -1055,7 +1055,7 @@ class CBController extends Controller
                 }
             }
 
-            if ($ro['type'] == 'checkbox') {
+            if (isset($ro['type']) && $ro['type'] == 'checkbox') {
 
                 if (is_array($inputdata)) {
                     if ($ro['datatable'] != '') {
@@ -1071,7 +1071,7 @@ class CBController extends Controller
             }
 
             //multitext colomn
-            if ($ro['type'] == 'multitext') {
+            if (isset($ro['type']) && $ro['type'] == 'multitext') {
                 $name = $ro['name'];
                 $multitext = "";
                 $maxI = ($this->arr[$name])?count($this->arr[$name]):0;
@@ -1082,7 +1082,7 @@ class CBController extends Controller
                 $this->arr[$name] = $multitext;
             }
 
-            if ($ro['type'] == 'googlemaps') {
+            if (isset($ro['type']) && $ro['type'] == 'googlemaps') {
                 if ($ro['latitude'] && $ro['longitude']) {
                     $latitude_name = $ro['latitude'];
                     $longitude_name = $ro['longitude'];
@@ -1091,7 +1091,7 @@ class CBController extends Controller
                 }
             }
 
-            if ($ro['type'] == 'select' || $ro['type'] == 'select2') {
+            if (isset($ro['type']) && ($ro['type'] == 'select' || $ro['type'] == 'select2')) {
                 if ($ro['datatable']) {
                     if ($inputdata == '') {
                         $this->arr[$name] = 0;
@@ -1099,7 +1099,7 @@ class CBController extends Controller
                 }
             }
 
-            if (@$ro['type'] == 'upload') {
+            if (isset($ro['type']) && $ro['type'] == 'upload') {
 
                 $this->arr[$name] = CRUDBooster::uploadFile($name, $ro['encrypt'] || $ro['upload_encrypt'], $ro['resize_width'], $ro['resize_height'], CB::myId());
 
@@ -1108,7 +1108,7 @@ class CBController extends Controller
                 }
             }
 
-            if (@$ro['type'] == 'filemanager') {
+            if (isset($ro['type']) && $ro['type'] == 'filemanager') {
                 $filename = str_replace('/'.config('lfm.prefix').'/'.config('lfm.files_folder_name').'/', '', $this->arr[$name]);
                 $url = 'uploads/'.$filename;
                 $this->arr[$name] = $url;
@@ -1168,7 +1168,7 @@ class CBController extends Controller
             $inputdata = request($name);
 
             //Insert Data Checkbox if Type Datatable
-            if ($ro['type'] == 'checkbox') {
+            if (isset($ro['type']) && $ro['type'] == 'checkbox') {
                 if ($ro['relationship_table']) {
                     $datatable = explode(",", $ro['datatable'])[0];
                     $foreignKey2 = CRUDBooster::getForeignKey($datatable, $ro['relationship_table']);
@@ -1188,7 +1188,7 @@ class CBController extends Controller
                 }
             }
 
-            if ($ro['type'] == 'select2') {
+            if (isset($ro['type']) && $ro['type'] == 'select2') {
                 if ($ro['relationship_table']) {
                     $datatable = explode(",", $ro['datatable'])[0];
                     $foreignKey2 = CRUDBooster::getForeignKey($datatable, $ro['relationship_table']);
@@ -1206,7 +1206,7 @@ class CBController extends Controller
                 }
             }
 
-            if ($ro['type'] == 'child') {
+            if (isset($ro['type']) && $ro['type'] == 'child') {
                 $name = str_slug($ro['label'], '');
                 $columns = $ro['columns'];
                 $getColName = request($name.'-'.$columns[0]['name']);
@@ -1307,7 +1307,7 @@ class CBController extends Controller
             $inputdata = request($name);
 
             //Insert Data Checkbox if Type Datatable
-            if ($ro['type'] == 'checkbox') {
+            if (isset($ro['type']) && $ro['type'] == 'checkbox') {
                 if ($ro['relationship_table']) {
                     $datatable = explode(",", $ro['datatable'])[0];
 
@@ -1328,7 +1328,7 @@ class CBController extends Controller
                 }
             }
 
-            if ($ro['type'] == 'select2') {
+            if (isset($ro['type']) && $ro['type'] == 'select2') {
                 if ($ro['relationship_table'] && $ro["datatable_orig"] == "") {
                     $datatable = explode(",", $ro['datatable'])[0];
 
@@ -1354,7 +1354,7 @@ class CBController extends Controller
                 }
             }
 
-            if ($ro['type'] == 'child') {
+            if (isset($ro['type']) && $ro['type'] == 'child') {
                 $name = str_slug($ro['label'], '');
                 $columns = $ro['columns'];
                 $getColName = request($name.'-'.$columns[0]['name']);

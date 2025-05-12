@@ -218,6 +218,9 @@ class CBController extends Controller
             CRUDBooster::redirect(CRUDBooster::adminPath(), cbLang('denied_access'));
         }
 
+        // Initialize parent_table to null by default
+        $data['parent_table'] = null;
+
         if (request('parent_table')) {
             $parentTablePK = CB::pk(g('parent_table'));
             $data['parent_table'] = DB::table(request('parent_table'))->where($parentTablePK, request('parent_id'))->first();

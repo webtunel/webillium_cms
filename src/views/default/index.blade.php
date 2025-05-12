@@ -30,7 +30,7 @@
 {{--                &nbsp; {{cbLang('form_back_to_list',['module'=>urldecode(g('label'))])}}</a></p>--}}
 {{--    @endif--}}
 
-    @if($parent_table)
+    @if(isset($parent_table) && $parent_table)
         <div class="box box-default">
             <div class="box-body table-responsive no-padding">
                 <table class='table table-bordered'>
@@ -38,18 +38,20 @@
                     <tr class='active'>
                         <td colspan="2"><strong><i class='fa fa-bars'></i> {{ ucwords(urldecode(g('label'))) }}</strong></td>
                     </tr>
-                    @foreach(explode(',',urldecode(g('parent_columns'))) as $c)
-                        <tr>
-                            <td width="25%"><strong>
-                                    @if(urldecode(g('parent_columns_alias')))
-                                        {{explode(',',urldecode(g('parent_columns_alias')))[$loop->index]}}
-                                    @else
-                                        {{  ucwords(str_replace('_',' ',$c)) }}
-                                    @endif
-                                </strong></td>
-                            <td> {{ $parent_table->$c }}</td>
-                        </tr>
-                    @endforeach
+                    @if(g('parent_columns'))
+                        @foreach(explode(',',urldecode(g('parent_columns'))) as $c)
+                            <tr>
+                                <td width="25%"><strong>
+                                        @if(urldecode(g('parent_columns_alias')))
+                                            {{explode(',',urldecode(g('parent_columns_alias')))[$loop->index]}}
+                                        @else
+                                            {{  ucwords(str_replace('_',' ',$c)) }}
+                                        @endif
+                                    </strong></td>
+                                <td> {{ $parent_table->$c }}</td>
+                            </tr>
+                        @endforeach
+                    @endif
                     </tbody>
                 </table>
             </div>
@@ -68,11 +70,11 @@
 
                         <div class="dropdown-menu" x-placement="bottom-start">
                             @if($button_delete && CRUDBooster::isDelete())
-                                <a class="dropdown-item" href="javascript:void(0)" data-name='delete' title='{{cbLang('action_delete_selected')}}'><i class="fa fa-{{$button['icon']}}"></i>{{cbLang('action_delete_selected')}}</a>
+                                <a class="dropdown-item" href="javascript:void(0)" data-name='delete' title='{{cbLang('action_delete_selected')}}'><i class="fa fa-trash"></i>{{cbLang('action_delete_selected')}}</a>
                             @endif
                                 @if($button_selected)
-                                    @foreach($button_selected as $button)
-                                        <a class="dropdown-item" href="javascript:void(0)" data-name='{{$button["name"]}}' title='{{$button["label"]}}'><i class="fa fa-{{$button['icon']}}"></i>{{$button['label']}}</a>
+                                    @foreach($button_selected as $btn)
+                                        <a class="dropdown-item" href="javascript:void(0)" data-name='{{$btn["name"]}}' title='{{$btn["label"]}}'><i class="fa fa-{{$btn['icon']}}"></i>{{$btn['label']}}</a>
                                     @endforeach
                                 @endif
                         </div>
@@ -86,6 +88,12 @@
                 @endif
 
                 @if($button_filter)
+                    @php
+                        $parameters = Request::all();
+                        unset($parameters['q']);
+                        $build_query = urldecode(http_build_query($parameters));
+                        $build_query = ($build_query) ? "?".$build_query : "";
+                    @endphp
                     <a  href="javascript:void(0)" id='btn_advanced_filter' data-url-parameter='{{$build_query}}'
                        title='{{cbLang('filter_dialog_title')}}' class="btn btn-sm btn-default {{(Request::get('filter_column'))?'active':''}}">
                         <i class="fa fa-filter"></i> {{cbLang("button_filter")}}

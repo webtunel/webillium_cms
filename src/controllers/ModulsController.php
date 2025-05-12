@@ -349,7 +349,34 @@ class ModulsController extends CBController
                 'path' => '',
             ];
         } else {
-            $row = CRUDBooster::first($this->table, ['id' => $id]);
+            // Make sure to properly retrieve the module data for editing
+            try {
+                $row = DB::table($this->table)->where('id', $id)->first();
+
+                // Log the row for debugging
+                \Log::info("Module data for ID $id:", (array)$row);
+
+                if (!$row) {
+                    // If module not found, set default values
+                    $row = (object)[
+                        'id' => $id,
+                        'name' => '',
+                        'table_name' => '',
+                        'icon' => 'fa fa-cog',
+                        'path' => '',
+                    ];
+                    \Log::warning("Module with ID $id not found in database.");
+                }
+            } catch (\Exception $e) {
+                \Log::error("Error fetching module data: " . $e->getMessage());
+                $row = (object)[
+                    'id' => $id,
+                    'name' => '',
+                    'table_name' => '',
+                    'icon' => 'fa fa-cog',
+                    'path' => '',
+                ];
+            }
         }
 
         return view("crudbooster::module_generator.step1", compact("tables_list", "fontawesome", "row", "id"));
@@ -366,89 +393,136 @@ class ModulsController extends CBController
             CRUDBooster::redirect(CRUDBooster::adminPath(), cbLang('denied_access'));
         }
 
-        $row = DB::table('cms_moduls')->where('id', $id)->first();
-
-        $columns = CRUDBooster::getTableColumns($row->table_name);
-
-        // Get database tables based on the driver
-        $table_list = [];
         try {
-            $driver = DB::connection()->getDriverName();
+            $row = DB::table('cms_moduls')->where('id', $id)->first();
 
-            if ($driver === 'pgsql') {
-                // PostgreSQL specific query to get tables (excluding system tables)
-                $schema = 'public'; // Default schema
-                $tables = DB::select("
-                    SELECT table_name
-                    FROM information_schema.tables
-                    WHERE table_schema = ?
-                    AND table_type = 'BASE TABLE'
-                    AND table_name NOT LIKE 'pg_%'
-                    AND table_name NOT LIKE 'sql_%'
-                ", [$schema]);
+            // Log the module data for debugging
+            \Log::info("Module data in Step 2 for ID $id:", (array)$row);
 
-                foreach ($tables as $table) {
-                    if (!in_array($table->table_name, $table_list)) {
-                        $table_list[] = $table->table_name;
+            if (!$row) {
+                \Log::error("Module with ID $id not found in database for Step 2");
+                return redirect()->route('ModulsControllerGetIndex')
+                    ->with(['message' => 'Module not found', 'message_type' => 'warning']);
+            }
+
+            // Ensure table_name is set and valid
+            if (empty($row->table_name)) {
+                \Log::warning("Module ID $id has no table_name set");
+                // Redirect back to step 1 if table name is not set
+                return redirect()->route('ModulsControllerGetStep1', ['id' => $id])
+                    ->with(['message' => 'Please select a table first', 'message_type' => 'warning']);
+            }
+
+            $columns = CRUDBooster::getTableColumns($row->table_name);
+
+            // Log columns for debugging
+            \Log::info("Columns for table {$row->table_name}:", ['columns' => $columns]);
+
+            // Get database tables based on the driver
+            $table_list = [];
+            try {
+                $driver = DB::connection()->getDriverName();
+
+                if ($driver === 'pgsql') {
+                    // PostgreSQL specific query to get tables (excluding system tables)
+                    $schema = 'public'; // Default schema
+                    $tables = DB::select("
+                        SELECT table_name
+                        FROM information_schema.tables
+                        WHERE table_schema = ?
+                        AND table_type = 'BASE TABLE'
+                        AND table_name NOT LIKE 'pg_%'
+                        AND table_name NOT LIKE 'sql_%'
+                    ", [$schema]);
+
+                    foreach ($tables as $table) {
+                        if (!in_array($table->table_name, $table_list)) {
+                            $table_list[] = $table->table_name;
+                        }
+                    }
+                } else {
+                    // Default approach using CRUDBooster
+                    $tables = CRUDBooster::listTables();
+                    foreach ($tables as $tab) {
+                        if (is_array($tab)) {
+                            foreach ($tab as $value) {
+                                if (!in_array($value, $table_list)) {
+                                    $table_list[] = $value;
+                                }
+                            }
+                        } elseif (is_object($tab)) {
+                            foreach ($tab as $key => $value) {
+                                if (!in_array($value, $table_list)) {
+                                    $table_list[] = $value;
+                                }
+                            }
+                        }
                     }
                 }
-            } else {
-                // Default approach using CRUDBooster
-                $tables = CRUDBooster::listTables();
-                foreach ($tables as $tab) {
-                    if (is_array($tab)) {
-                        foreach ($tab as $value) {
-                            if (!in_array($value, $table_list)) {
-                                $table_list[] = $value;
-                            }
-                        }
-                    } elseif (is_object($tab)) {
-                        foreach ($tab as $key => $value) {
-                            if (!in_array($value, $table_list)) {
-                                $table_list[] = $value;
-                            }
-                        }
+
+                // Filter out cms_ tables except user table
+                $table_list = array_filter($table_list, function($table) {
+                    return substr($table, 0, 4) != 'cms_' || $table == config('crudbooster.USER_TABLE');
+                });
+
+                // Filter out migrations table
+                $table_list = array_filter($table_list, function($table) {
+                    return $table != 'migrations';
+                });
+
+                // Convert to indexed array
+                $table_list = array_values($table_list);
+
+                // Sort tables alphabetically
+                sort($table_list);
+
+            } catch (\Exception $e) {
+                \Log::error("Error getting tables: " . $e->getMessage());
+                // Provide some default tables as fallback
+                $table_list = ['users', 'products', 'categories', 'orders', 'posts', 'comments'];
+            }
+
+            // Initialize $cb_col variable
+            $cb_col = [];
+
+            // Load existing column configuration if controller file exists
+            $controller_path = app_path('Http/Controllers/'.str_replace('.', '', $row->controller).'.php');
+            if (file_exists($controller_path)) {
+                try {
+                    $response = file_get_contents($controller_path);
+                    $column_datas = extract_unit($response, "# START COLUMNS DO NOT REMOVE THIS LINE", "# END COLUMNS DO NOT REMOVE THIS LINE");
+                    $column_datas = str_replace('$this->', '$cb_', $column_datas);
+
+                    // Log the column data for debugging
+                    \Log::info("Column data extracted from controller:", ['data' => $column_datas]);
+
+                    // Safely eval the code
+                    @eval($column_datas);
+
+                    // If $cb_col is not set after eval, initialize it
+                    if (!isset($cb_col)) {
+                        $cb_col = [];
                     }
+                } catch (\Exception $e) {
+                    \Log::error("Error parsing controller columns: " . $e->getMessage());
+                    $cb_col = [];
                 }
             }
 
-            // Filter out cms_ tables except user table
-            $table_list = array_filter($table_list, function($table) {
-                return substr($table, 0, 4) != 'cms_' || $table == config('crudbooster.USER_TABLE');
-            });
+            $data = [];
+            $data['id'] = $id;
+            $data['row'] = $row; // Add the module row data to the view
+            $data['columns'] = is_array($columns) ? $columns : [];
+            $data['table_list'] = $table_list;
+            $data['cb_col'] = $cb_col;
 
-            // Filter out migrations table
-            $table_list = array_filter($table_list, function($table) {
-                return $table != 'migrations';
-            });
-
-            // Convert to indexed array
-            $table_list = array_values($table_list);
-
-            // Sort tables alphabetically
-            sort($table_list);
+            return view('crudbooster::module_generator.step2', $data);
 
         } catch (\Exception $e) {
-            \Log::error("Error getting tables: " . $e->getMessage());
-            // Provide some default tables as fallback
-            $table_list = ['users', 'products', 'categories', 'orders', 'posts', 'comments'];
+            \Log::error("Error in getStep2: " . $e->getMessage());
+            return redirect()->route('ModulsControllerGetIndex')
+                ->with(['message' => 'Error processing module: ' . $e->getMessage(), 'message_type' => 'warning']);
         }
-
-        // Load existing column configuration if controller file exists
-        if (file_exists(app_path('Http/Controllers/'.str_replace('.', '', $row->controller).'.php'))) {
-            $response = file_get_contents(app_path('Http/Controllers/'.$row->controller.'.php'));
-            $column_datas = extract_unit($response, "# START COLUMNS DO NOT REMOVE THIS LINE", "# END COLUMNS DO NOT REMOVE THIS LINE");
-            $column_datas = str_replace('$this->', '$cb_', $column_datas);
-            eval($column_datas);
-        }
-
-        $data = [];
-        $data['id'] = $id;
-        $data['columns'] = $columns;
-        $data['table_list'] = $table_list;
-        $data['cb_col'] = (isset($cb_col)) ? $cb_col : null;
-
-        return view('crudbooster::module_generator.step2', $data);
     }
 
     public function postStep2()
@@ -616,53 +690,109 @@ class ModulsController extends CBController
             CRUDBooster::redirect(CRUDBooster::adminPath(), cbLang('denied_access'));
         }
 
-        $row = DB::table('cms_moduls')->where('id', $id)->first();
-
-        $columns = CRUDBooster::getTableColumns($row->table_name);
-
-        if (file_exists(app_path('Http/Controllers/'.$row->controller.'.php'))) {
-            $response = file_get_contents(app_path('Http/Controllers/'.$row->controller.'.php'));
-            $column_datas = extract_unit($response, "# START FORM DO NOT REMOVE THIS LINE", "# END FORM DO NOT REMOVE THIS LINE");
-            $column_datas = str_replace('$this->', '$cb_', $column_datas);
-            eval($column_datas);
-        }
-
-        // Get all available field types
-        $types = [];
-        $fallback_types = ['text', 'textarea', 'select', 'checkbox', 'radio', 'number', 'date', 'time', 'datetime', 'email', 'password', 'hidden'];
-
         try {
-            // First try the package location
-            $package_path = base_path('vendor/webtunel/webilliumcms/src/views/default/type_components');
-            if (is_dir($package_path)) {
-                foreach (glob($package_path.'/*', GLOB_ONLYDIR) as $dir) {
-                    $types[] = basename($dir);
+            $row = DB::table('cms_moduls')->where('id', $id)->first();
+
+            // Log the module data for debugging
+            \Log::info("Module data in Step 3 for ID $id:", (array)$row);
+
+            if (!$row) {
+                \Log::error("Module with ID $id not found in database for Step 3");
+                return redirect()->route('ModulsControllerGetIndex')
+                    ->with(['message' => 'Module not found', 'message_type' => 'warning']);
+            }
+
+            // Ensure table_name is set and valid
+            if (empty($row->table_name)) {
+                \Log::warning("Module ID $id has no table_name set in Step 3");
+                // Redirect back to step 1 if table name is not set
+                return redirect()->route('ModulsControllerGetStep1', ['id' => $id])
+                    ->with(['message' => 'Please select a table first', 'message_type' => 'warning']);
+            }
+
+            $columns = CRUDBooster::getTableColumns($row->table_name);
+
+            // Initialize $cb_form
+            $cb_form = [];
+
+            // Load existing form configuration if controller file exists
+            $controller_path = app_path('Http/Controllers/'.str_replace('.', '', $row->controller).'.php');
+            if (file_exists($controller_path)) {
+                try {
+                    $response = file_get_contents($controller_path);
+                    $column_datas = extract_unit($response, "# START FORM DO NOT REMOVE THIS LINE", "# END FORM DO NOT REMOVE THIS LINE");
+                    $column_datas = str_replace('$this->', '$cb_', $column_datas);
+
+                    // Log the form data for debugging
+                    \Log::info("Form data extracted from controller:", ['data' => $column_datas]);
+
+                    // Safely eval the code
+                    @eval($column_datas);
+
+                    // If $cb_form is not set after eval, initialize it
+                    if (!isset($cb_form)) {
+                        $cb_form = [];
+                    }
+                } catch (\Exception $e) {
+                    \Log::error("Error parsing controller form data: " . $e->getMessage());
+                    $cb_form = [];
                 }
             }
 
-            // Then try the original CRUDBooster location as a fallback
-            if (empty($types)) {
-                $original_path = base_path('vendor/crocodicstudio/crudbooster/src/views/default/type_components');
-                if (is_dir($original_path)) {
-                    foreach (glob($original_path.'/*', GLOB_ONLYDIR) as $dir) {
+            // Get all available field types
+            $types = [];
+            $fallback_types = ['text', 'textarea', 'select', 'checkbox', 'radio', 'number', 'date', 'time', 'datetime', 'email', 'password', 'hidden', 'wysiwyg', 'select2', 'upload', 'money', 'datamodal', 'child', 'json', 'googlemaps'];
+
+            try {
+                // First try the package location
+                $package_path = base_path('vendor/webtunel/webilliumcms/src/views/default/type_components');
+                if (is_dir($package_path)) {
+                    foreach (glob($package_path.'/*', GLOB_ONLYDIR) as $dir) {
                         $types[] = basename($dir);
                     }
                 }
+
+                // Then try the original CRUDBooster location as a fallback
+                if (empty($types)) {
+                    $original_path = base_path('vendor/crocodicstudio/crudbooster/src/views/default/type_components');
+                    if (is_dir($original_path)) {
+                        foreach (glob($original_path.'/*', GLOB_ONLYDIR) as $dir) {
+                            $types[] = basename($dir);
+                        }
+                    }
+                }
+
+                // Also check local override location
+                $local_path = base_path('resources/views/vendor/crudbooster/type_components');
+                if (is_dir($local_path)) {
+                    foreach (glob($local_path.'/*', GLOB_ONLYDIR) as $dir) {
+                        $type = basename($dir);
+                        if (!in_array($type, $types)) {
+                            $types[] = $type;
+                        }
+                    }
+                }
+            } catch (\Exception $e) {
+                // Log the error but continue
+                \Log::error('Failed to get field types: ' . $e->getMessage());
             }
+
+            // If all methods fail, use the fallback types
+            if (empty($types)) {
+                $types = $fallback_types;
+            }
+
+            // Sort the types alphabetically
+            sort($types);
+
+            // Add the row data for the view to access
+            return view('crudbooster::module_generator.step3', compact('columns', 'cb_form', 'types', 'id', 'row'));
+
         } catch (\Exception $e) {
-            // Log the error but continue
-            \Log::error('Failed to get field types: ' . $e->getMessage());
+            \Log::error("Error in getStep3: " . $e->getMessage());
+            return redirect()->route('ModulsControllerGetIndex')
+                ->with(['message' => 'Error processing module: ' . $e->getMessage(), 'message_type' => 'warning']);
         }
-
-        // If both methods fail, use the fallback types
-        if (empty($types)) {
-            $types = $fallback_types;
-        }
-
-        // Sort the types alphabetically
-        sort($types);
-
-        return view('crudbooster::module_generator.step3', compact('columns', 'cb_form', 'types', 'id'));
     }
 
     public function getTypeInfo($type = 'text')
@@ -800,20 +930,52 @@ class ModulsController extends CBController
             CRUDBooster::redirect(CRUDBooster::adminPath(), cbLang('denied_access'));
         }
 
-        $row = DB::table('cms_moduls')->where('id', $id)->first();
+        try {
+            $row = DB::table('cms_moduls')->where('id', $id)->first();
 
-        $data = [];
-        $data['id'] = $id;
-        if (file_exists(app_path('Http/Controllers/'.$row->controller.'.php'))) {
-            $response = file_get_contents(app_path('Http/Controllers/'.$row->controller.'.php'));
-            $column_datas = extract_unit($response, "# START CONFIGURATION DO NOT REMOVE THIS LINE", "# END CONFIGURATION DO NOT REMOVE THIS LINE");
-            $column_datas = str_replace('$this->', '$data[\'cb_', $column_datas);
-            $column_datas = str_replace(' = ', '\'] = ', $column_datas);
-            $column_datas = str_replace([' ', "\t"], '', $column_datas);
-            eval($column_datas);
+            // Log the module data for debugging
+            \Log::info("Module data in Step 4 for ID $id:", (array)$row);
+
+            if (!$row) {
+                \Log::error("Module with ID $id not found in database for Step 4");
+                return redirect()->route('ModulsControllerGetIndex')
+                    ->with(['message' => 'Module not found', 'message_type' => 'warning']);
+            }
+
+            $data = [];
+            $data['id'] = $id;
+            $data['row'] = $row; // Add the module row data to the view
+
+            $controller_path = app_path('Http/Controllers/'.str_replace('.', '', $row->controller).'.php');
+            if (file_exists($controller_path)) {
+                try {
+                    $response = file_get_contents($controller_path);
+                    $column_datas = extract_unit($response, "# START CONFIGURATION DO NOT REMOVE THIS LINE", "# END CONFIGURATION DO NOT REMOVE THIS LINE");
+
+                    // Log the configuration data for debugging
+                    \Log::info("Configuration data extracted from controller:", ['data' => $column_datas]);
+
+                    // Only process if data is not empty
+                    if (trim($column_datas)) {
+                        $column_datas = str_replace('$this->', '$data[\'cb_', $column_datas);
+                        $column_datas = str_replace(' = ', '\'] = ', $column_datas);
+                        $column_datas = str_replace([' ', "\t"], '', $column_datas);
+
+                        // Safely eval the code
+                        @eval($column_datas);
+                    }
+                } catch (\Exception $e) {
+                    \Log::error("Error parsing controller configuration: " . $e->getMessage());
+                }
+            }
+
+            return view('crudbooster::module_generator.step4', $data);
+
+        } catch (\Exception $e) {
+            \Log::error("Error in getStep4: " . $e->getMessage());
+            return redirect()->route('ModulsControllerGetIndex')
+                ->with(['message' => 'Error processing module: ' . $e->getMessage(), 'message_type' => 'warning']);
         }
-
-        return view('crudbooster::module_generator.step4', $data);
     }
 
     public function postStepFinish()

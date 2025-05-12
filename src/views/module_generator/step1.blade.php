@@ -63,12 +63,10 @@
                 <input type="hidden" name="id" value="{{$row->id ?? ''}}">
                 <div class="form-group">
                     <label for="">Table</label>
-                    <select name="table" id="table" required class="form-control form-control-sm" value="{{$row->table_name ?? ''}}">
+                    <select name="table" id="table" required class="form-control form-control-sm">
                         <option value="">{{cbLang('text_prefix_option')}} Table</option>
                         @foreach($tables_list as $table)
-
-                            <option {{($table == ($row->table_name ?? ''))?"selected":""}} value="{{$table}}">{{$table}}</option>
-
+                            <option {{ $table == $row->table_name ? "selected" : "" }} value="{{$table}}">{{$table}}</option>
                         @endforeach
                     </select>
                     <div class="help-block">
@@ -82,9 +80,11 @@
 
                 <div class="form-group">
                     <label for="">Icon</label>
-                    <select name="icon" id="icon" required class="form-control form-control-sm">
+                    <select name="icon" id="icon" required class="form-control form-control-sm select2">
                         @foreach($fontawesome as $f)
-                            <option {{(($row->icon ?? '') == 'fa fa-'.$f)?"selected":""}} value="fa fa-{{$f}}">{{$f}}</option>
+                            <option {{ $row->icon == 'fa fa-'.$f ? "selected" : "" }} value="fa fa-{{$f}}">
+                                <i class="fa fa-{{$f}}"></i> {{$f}}
+                            </option>
                         @endforeach
                     </select>
                 </div>

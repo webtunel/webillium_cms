@@ -35,10 +35,10 @@
                         }
                     }
 
-                    $value = @$row->{$col['field']};
-                    $title = @$row->{$title_field};
+                    $value = isset($row->{$col['field']}) ? $row->{$col['field']} : null;
+                    $title = isset($row->{$title_field}) ? $row->{$title_field} : null;
 
-                    if (@$col['image']) {
+                    if (isset($col['image']) && $col['image']) {
                         if ($value == '') {
                             $value = "http://placehold.it/50x50&text=NO+IMAGE";
                         }
@@ -49,7 +49,7 @@
                         } else {
                             echo "<td>$pic</td>";
                         }
-                    } elseif (@$col['download']) {
+                    } elseif (isset($col['download']) && $col['download']) {
                         $url = (strpos($value, 'http://') !== FALSE) ? $value : asset($value);
                         echo "<td><a class='btn btn-sm btn-primary' href='$url' target='_blank' title='Download File'>Download</a></td>";
                     } else {
@@ -60,7 +60,7 @@
                             $value = \Illuminate\Support\Str::limit($value, $col['str_limit']);
                         }
 
-                        if ($col['nl2br']) {
+                        if (isset($col['nl2br']) && $col['nl2br']) {
                             $value = nl2br($value);
                         }
 

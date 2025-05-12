@@ -13,14 +13,31 @@ if ($datatable && isset($form['relationship_table']) && $form['relationship_tabl
     if(isset($form['datatable_orig']) && $form['datatable_orig'] != ''){
         $params = explode("|", $form['datatable_orig']);
         if(!isset($params[2])) $params[2] = "id";
-        $values = explode(",", DB::table($params[0])->where($params[2], $id)->first()->{$params[1]});
-        $tableData = DB::table($datatable_table)->whereIn("id", $values)->select($datatable_field)->pluck($datatable_field)->toArray();
-    } else {
-        $foreignKey = CRUDBooster::getForeignKey($table, $form['relationship_table']);
-        $foreignKey2 = CRUDBooster::getForeignKey($datatable_table, $form['relationship_table']);
-        $ids = DB::table($form['relationship_table'])->where($foreignKey, $id)->pluck($foreignKey2)->toArray();
 
-        $tableData = DB::table($datatable_table)->whereIn('id', $ids)->pluck($datatable_field)->toArray();
+        // Check if $id is defined, otherwise use null
+        $id_value = isset($id) ? $id : null;
+        if ($id_value) {
+            $row = DB::table($params[0])->where($params[2], $id_value)->first();
+            if ($row && isset($row->{$params[1]})) {
+                $values = explode(",", $row->{$params[1]});
+                $tableData = DB::table($datatable_table)->whereIn("id", $values)->select($datatable_field)->pluck($datatable_field)->toArray();
+            } else {
+                $tableData = [];
+            }
+        } else {
+            $tableData = [];
+        }
+    } else {
+        // Check if $id is defined, otherwise use null
+        $id_value = isset($id) ? $id : null;
+        if ($id_value) {
+            $foreignKey = CRUDBooster::getForeignKey($table, $form['relationship_table']);
+            $foreignKey2 = CRUDBooster::getForeignKey($datatable_table, $form['relationship_table']);
+            $ids = DB::table($form['relationship_table'])->where($foreignKey, $id_value)->pluck($foreignKey2)->toArray();
+            $tableData = DB::table($datatable_table)->whereIn('id', $ids)->pluck($datatable_field)->toArray();
+        } else {
+            $tableData = [];
+        }
     }
 
     echo implode(", ", $tableData);

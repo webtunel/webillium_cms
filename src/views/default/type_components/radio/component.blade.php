@@ -48,7 +48,7 @@
                 $selects_data->where('deleted_at', NULL);
             }
 
-            if (@$form['datatable_where']) {
+            if (isset($form['datatable_where']) && !empty($form['datatable_where'])) {
                 $selects_data->whereraw($form['datatable_where']);
             }
 

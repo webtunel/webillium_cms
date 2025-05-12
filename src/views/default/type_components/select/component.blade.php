@@ -17,7 +17,7 @@
                             @if(!empty($add_field))
                     var add_field = ($("#{{$add_field}}").val()) ? $("#{{$add_field}}").val() : "";
                             @endif
-                    var datatableWhere = "{{$form['datatable_where']}}";
+                    var datatableWhere = "{{isset($form['datatable_where']) ? $form['datatable_where'] : ''}}";
                     @if(!empty($add_field))
                     if (datatableWhere) {
                         if (add_field) {

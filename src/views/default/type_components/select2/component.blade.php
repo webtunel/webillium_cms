@@ -9,12 +9,12 @@
             </script>
         @endpush
     @else
-        @if($form['datatable_ajax'] == true)
+        @if(isset($form['datatable_ajax']) && $form['datatable_ajax'] == true)
 
             <?php
-            $datatable = @$form['datatable'];
-            $where = @$form['datatable_where'];
-            $format = @$form['datatable_format'];
+            $datatable = isset($form['datatable']) ? $form['datatable'] : '';
+            $where = isset($form['datatable_where']) ? $form['datatable_where'] : '';
+            $format = isset($form['datatable_format']) ? $form['datatable_format'] : '';
 
             $raw = explode(',', $datatable);
             $url = CRUDBooster::mainpath("find-data");
@@ -22,11 +22,11 @@
             $table1 = $raw[0];
             $column1 = $raw[1];
 
-            @$table2 = $raw[2];
-            @$column2 = $raw[3];
+            $table2 = isset($raw[2]) ? $raw[2] : '';
+            $column2 = isset($raw[3]) ? $raw[3] : '';
 
-            @$table3 = $raw[4];
-            @$column3 = $raw[5];
+            $table3 = isset($raw[4]) ? $raw[4] : '';
+            $column3 = isset($raw[5]) ? $raw[5] : '';
             ?>
 
             @push('bottom')
@@ -154,7 +154,7 @@
                     <?php
                     $select_table = explode(',', $form['datatable'])[0];
                     $select_title = explode(',', $form['datatable'])[1];
-                    $select_where = $form['datatable_where'];
+                    $select_where = isset($form['datatable_where']) ? $form['datatable_where'] : '';
                     $pk = CRUDBooster::findPrimaryKey($select_table);
 
                     $result = DB::table($select_table)->select($pk, $select_title);
@@ -183,13 +183,13 @@
                     }
                     ?>
                 @else
-                    @if($form['datatable_ajax'] == false)
+                    @if(!isset($form['datatable_ajax']) || $form['datatable_ajax'] == false)
                         <option value=''>{{cbLang('text_prefix_option')}} {{$form['label']}}</option>
                         <?php
                         $select_table = explode(',', $form['datatable'])[0];
                         $select_title = explode(',', $form['datatable'])[1];
-                        $select_where = $form['datatable_where'];
-                        $datatable_format = $form['datatable_format'];
+                        $select_where = isset($form['datatable_where']) ? $form['datatable_where'] : '';
+                        $datatable_format = isset($form['datatable_format']) ? $form['datatable_format'] : '';
                         $select_table_pk = CRUDBooster::findPrimaryKey($select_table);
                         $result = DB::table($select_table)->select($select_table_pk, $select_title);
                         if ($datatable_format) {

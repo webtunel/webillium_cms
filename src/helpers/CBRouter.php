@@ -152,9 +152,12 @@ class CBRouter
 
                         if (file_exists(app_path('Models/'.$modalName.'.php'))) {
                             echo 'Exist '.app_path('Models/'.$modalName.'.php<br>');
-                        }else{
+                        } else {
                             echo 'NOT Exist '.app_path('Models/'.$modalName.'.php<br>');
-                            \Artisan::call('krlove:generate:model '.$modalName.' --table-name='.$table.' --output-path='.app_path('Models'));
+                            // Create a basic model file manually instead of using krlove:generate:model
+                            $modelContent = "<?php\n\nnamespace App\\Models;\n\nuse Illuminate\\Database\\Eloquent\\Model;\n\nclass {$modalName} extends Model\n{\n    protected \$table = '{$table}';\n}\n";
+                            file_put_contents(app_path('Models/'.$modalName.'.php'), $modelContent);
+                            echo 'Created model: '.app_path('Models/'.$modalName.'.php<br>');
                         }
                     }
                 }

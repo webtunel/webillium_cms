@@ -50,12 +50,12 @@
     <input type='hidden' name='_token' value='{{csrf_token()}}'/>
     <table id='table_dashboard' class="table table-hover table-striped table-bordered">
         <thead>
-        <tr class="active">
+        <tr class="active" style="background-color: var(--primary-color, #6777ef);">
             <?php if($button_bulk_action):?>
-            <th width='3%'><input type='checkbox' id='checkall'/></th>
+            <th width='3%' style="color: #fff;"><input type='checkbox' id='checkall'/></th>
             <?php endif;?>
             <?php if($show_numbering):?>
-            <th width="1%">{{ cbLang('no') }}</th>
+            <th width="1%" style="color: #fff;">{{ cbLang('no') }}</th>
             <?php endif;?>
             <?php
             foreach ($columns as $col) {
@@ -69,25 +69,25 @@
                 $width = $col['width'] ?? "auto";
                 $style = $col['style'] ?? "";
                 $mainpath = trim(CRUDBooster::mainpath(), '/').$build_query;
-                echo "<th width='$width' $style>";
+                echo "<th width='$width' $style style=\"color: #fff;\">";
                 if (isset($sort_column[$field]) && is_array($sort_column[$field]) && isset($sort_column[$field]['sorting'])) {
                     switch ($sort_column[$field]['sorting']) {
                         case 'asc':
                             $url = CRUDBooster::urlFilterColumn($field, 'sorting', 'desc');
-                            echo "<a href='$url' title='Click to sort descending'>$colname &nbsp; <i class='fa fa-sort-desc'></i></a>";
+                            echo "<a href='$url' title='Click to sort descending' style='color: #fff;'>$colname &nbsp; <i class='fa fa-sort-desc'></i></a>";
                             break;
                         case 'desc':
                             $url = CRUDBooster::urlFilterColumn($field, 'sorting', 'asc');
-                            echo "<a href='$url' title='Click to sort ascending'>$colname &nbsp; <i class='fa fa-sort-asc'></i></a>";
+                            echo "<a href='$url' title='Click to sort ascending' style='color: #fff;'>$colname &nbsp; <i class='fa fa-sort-asc'></i></a>";
                             break;
                         default:
                             $url = CRUDBooster::urlFilterColumn($field, 'sorting', 'asc');
-                            echo "<a href='$url' title='Click to sort ascending'>$colname &nbsp; <i class='fa fa-sort'></i></a>";
+                            echo "<a href='$url' title='Click to sort ascending' style='color: #fff;'>$colname &nbsp; <i class='fa fa-sort'></i></a>";
                             break;
                     }
                 } else {
                     $url = CRUDBooster::urlFilterColumn($field, 'sorting', 'asc');
-                    echo "<a href='$url' title='Click to sort ascending'>$colname &nbsp; <i class='fa fa-sort'></i></a>";
+                    echo "<a href='$url' title='Click to sort ascending' style='color: #fff;'>$colname &nbsp; <i class='fa fa-sort'></i></a>";
                 }
 
                 echo "</th>";
@@ -96,7 +96,7 @@
 
             @if($button_table_action)
                 @if(CRUDBooster::isUpdate() || CRUDBooster::isDelete() || CRUDBooster::isRead())
-                    <th width='{{ $button_action_width ?? "auto" }}' style="text-align:right">{{cbLang("action_label")}}</th>
+                    <th width='{{ $button_action_width ?? "auto" }}' style="text-align:right; color: #fff;">{{cbLang("action_label")}}</th>
                 @endif
             @endif
         </tr>
@@ -157,13 +157,13 @@
 
 
         <tfoot>
-        <tr>
+        <tr style="background-color: var(--primary-color, #6777ef);">
             <?php if($button_bulk_action):?>
-            <th>&nbsp;</th>
+            <th style="color: #fff;">&nbsp;</th>
             <?php endif;?>
 
             <?php if($show_numbering):?>
-            <th>&nbsp;</th>
+            <th style="color: #fff;">&nbsp;</th>
             <?php endif;?>
 
             <?php
@@ -172,13 +172,13 @@
                 $colname = $col['label'] ?? '';
                 $width = $col['width'] ?? "auto";
                 $style = $col['style'] ?? "";
-                echo "<th width='$width' $style>$colname</th>";
+                echo "<th width='$width' $style style=\"color: #fff;\">$colname</th>";
             }
             ?>
 
             @if($button_table_action)
                 @if(CRUDBooster::isUpdate() || CRUDBooster::isDelete() || CRUDBooster::isRead())
-                    <th> -</th>
+                    <th style="color: #fff;"> -</th>
                 @endif
             @endif
         </tr>

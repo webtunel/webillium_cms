@@ -21,12 +21,33 @@ class CRUDBoosterServiceProvider extends ServiceProvider
      */
 
     public function boot()
-    {        
-                                
+    {
+
         $this->loadViewsFrom(__DIR__.'/views', 'crudbooster');
         $this->loadMigrationsFrom(__DIR__.'/database/migrations');
         $this->loadTranslationsFrom(__DIR__.'/localization','crudbooster');
         $this->loadRoutesFrom(__DIR__.'/routes.php');
+
+        // Register PostgreSQL array type mappings globally
+        try {
+            if (\DB::connection()->getDriverName() === 'pgsql') {
+                $platform = \DB::getDoctrineSchemaManager()->getDatabasePlatform();
+                if (method_exists($platform, 'registerDoctrineTypeMapping')) {
+                    $platform->registerDoctrineTypeMapping('_text', 'string');
+                    $platform->registerDoctrineTypeMapping('_int4', 'integer');
+                    $platform->registerDoctrineTypeMapping('_numeric', 'float');
+                    $platform->registerDoctrineTypeMapping('_bool', 'boolean');
+                    $platform->registerDoctrineTypeMapping('_varchar', 'string');
+                    $platform->registerDoctrineTypeMapping('_json', 'json');
+                    $platform->registerDoctrineTypeMapping('_jsonb', 'json');
+                    $platform->registerDoctrineTypeMapping('_timestamp', 'datetime');
+                    $platform->registerDoctrineTypeMapping('_date', 'date');
+                }
+            }
+        } catch (\Exception $e) {
+            // Log the error but continue
+            \Log::warning("Failed to register PostgreSQL array types: " . $e->getMessage());
+        }
 
         if($this->app->runningInConsole()) {
             $this->registerSeedsFrom(__DIR__.'/database/seeds');

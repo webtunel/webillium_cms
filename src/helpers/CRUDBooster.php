@@ -1095,11 +1095,69 @@ class CRUDBooster
             return 'id';
         }
 
-        $pk = DB::getDoctrineSchemaManager()->listTableDetails($table)->getPrimaryKey();
-        if(!$pk) {
-            return null;
+        try {
+            // Try getting the primary key using Doctrine
+            $schemaManager = DB::getDoctrineSchemaManager();
+
+            // Add PostgreSQL array type mappings
+            $platform = $schemaManager->getDatabasePlatform();
+            if (method_exists($platform, 'registerDoctrineTypeMapping')) {
+                $platform->registerDoctrineTypeMapping('_text', 'string');
+                $platform->registerDoctrineTypeMapping('_int4', 'integer');
+                $platform->registerDoctrineTypeMapping('_numeric', 'float');
+                $platform->registerDoctrineTypeMapping('_bool', 'boolean');
+                $platform->registerDoctrineTypeMapping('_varchar', 'string');
+                $platform->registerDoctrineTypeMapping('_json', 'json');
+                $platform->registerDoctrineTypeMapping('_jsonb', 'json');
+                $platform->registerDoctrineTypeMapping('_timestamp', 'datetime');
+                $platform->registerDoctrineTypeMapping('_date', 'date');
+            }
+
+            $tableDetails = $schemaManager->listTableDetails($table);
+            $pk = $tableDetails->getPrimaryKey();
+            if ($pk) {
+                return $pk->getColumns()[0];
+            }
+        } catch (\Exception $e) {
+            \Log::warning("Failed to get primary key using Doctrine: " . $e->getMessage());
+            // Fall through to alternative methods
         }
-        return $pk->getColumns()[0];
+
+        // If Doctrine approach fails, try direct SQL query approach based on DB driver
+        try {
+            $driver = DB::connection()->getDriverName();
+
+            if ($driver === 'pgsql') {
+                // PostgreSQL query to get primary key
+                $result = DB::select("
+                    SELECT a.attname as column_name
+                    FROM pg_index i
+                    JOIN pg_attribute a ON a.attrelid = i.indrelid AND a.attnum = ANY(i.indkey)
+                    WHERE i.indrelid = ?::regclass
+                    AND i.indisprimary
+                ", [$table]);
+
+                if (!empty($result)) {
+                    return $result[0]->column_name;
+                }
+            } else if ($driver === 'mysql') {
+                // MySQL query to get primary key
+                $result = DB::select("
+                    SELECT COLUMN_NAME
+                    FROM information_schema.KEY_COLUMN_USAGE
+                    WHERE TABLE_SCHEMA = ? AND TABLE_NAME = ? AND CONSTRAINT_NAME = 'PRIMARY'
+                ", [DB::connection()->getDatabaseName(), $table]);
+
+                if (!empty($result)) {
+                    return $result[0]->COLUMN_NAME;
+                }
+            }
+        } catch (\Exception $e) {
+            \Log::warning("Failed to get primary key using SQL: " . $e->getMessage());
+        }
+
+        // Fallback to default 'id'
+        return 'id';
     }
 
     public static function newId($table)
@@ -1537,7 +1595,17 @@ class CRUDBooster
 
         $coloms = CRUDBooster::getTableColumns($table);
         $name_col = CRUDBooster::getNameTable($coloms);
-        $pk = CB::pk($table);
+
+        // Try to get primary key with extended error handling
+        try {
+            $pk = CB::pk($table);
+            if (!$pk) {
+                $pk = 'id'; // Default to id if primary key retrieval fails
+            }
+        } catch (\Exception $e) {
+            \Log::warning("Failed to get primary key for table $table: " . $e->getMessage());
+            $pk = 'id'; // Default to id on exception
+        }
 
         $button_table_action = 'TRUE';
         $button_action_style = "button_icon";

@@ -68,7 +68,7 @@
         <select class='form-control' id="{{$name}}" data-value='{{$value}}' {{$required}} {!!$placeholder!!} {{$readonly}} {{$disabled}} name="{{$name}}">
             <option value=''>{{$default}}</option>
             <?php
-            if (! $form['parent_select']) {
+            if (!isset($form['parent_select']) || !$form['parent_select']) {
                 if (isset($form['dataquery']) && !empty($form['dataquery'])):
 
                     $query = DB::select(DB::raw($form['dataquery']));

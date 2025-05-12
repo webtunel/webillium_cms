@@ -36,7 +36,7 @@
 
         <?php
 
-        if (@$form['datatable']):
+        if (isset($form['datatable']) && $form['datatable']):
             $datatable_array = explode(",", $form['datatable']);
             $datatable_tab = $datatable_array[0];
             $datatable_field = $datatable_array[1];
@@ -75,24 +75,26 @@
                 $checked = ($value == $d->id) ? "checked" : "";
 
                 echo "
-											<div data-val='$val' class='input-radio-wrapper $disabled'>
-											  <label class='radio-inline'>
-											    <input type='radio' $disabled $checked name='".$name."' value='".$d->id."'> ".$val."
-											  </label>
-											</div>";
+												<div data-val='$val' class='input-radio-wrapper $disabled'>
+												  <label class='radio-inline'>
+												    <input type='radio' $disabled $checked name='".$name."' value='".$d->id."'> ".$val."
+												  </label>
+												</div>";
             }
 
         endif;
-        if ($form['dataquery']) {
+        if (isset($form['dataquery']) && $form['dataquery']) {
             $query = DB::select(DB::raw($form['dataquery']));
             if ($query) {
                 foreach ($query as $q) {
                     $checked = ($value == $q->value) ? "checked" : "";
-                    echo "<div data-val='$val' class=' $disabled'>
-																<label class='radio-inline'>
-																	<input type='radio' $disabled $checked name='".$name."' value='$q->value'> ".$q->label."
-																</label>
-																</div>";
+                    // Fix undefined variable
+                    $display_val = isset($q->value) ? $q->value : '';
+                    echo "<div data-val='".$display_val."' class=' $disabled'>
+																	<label class='radio-inline'>
+																		<input type='radio' $disabled $checked name='".$name."' value='".$q->value."'> ".$q->label."
+																	</label>
+																	</div>";
                 }
             }
         }

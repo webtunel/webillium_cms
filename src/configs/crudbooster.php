@@ -39,6 +39,16 @@ return [
     'MULTIPLE_DATABASE_MODULE' => [],
 
     /*
+    * JWT Authentication Configuration
+    * These settings are used for JWT (JSON Web Token) authentication
+    */
+    'JWT_SECRET' => env('JWT_SECRET', 'webillium_jwt_secret_key'),
+    'JWT_TTL' => env('JWT_TTL', 1440), // Time to live in minutes (24 hours)
+    'JWT_REFRESH_TTL' => env('JWT_REFRESH_TTL', 20160), // Refresh time to live in minutes (14 days)
+    'JWT_VERIFY_IP' => env('JWT_VERIFY_IP', true), // Verify IP address when validating token
+    'JWT_VERIFY_USER_AGENT' => env('JWT_VERIFY_USER_AGENT', true), // Verify User Agent when validating token
+    
+    /*
     * Layout for the Admin LTE backend theme
     *
     * Fixed:               use the class .fixed to get a fixed header and sidebar.

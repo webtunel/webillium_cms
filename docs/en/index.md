@@ -9,6 +9,10 @@ Webillium CMS is a powerful Laravel CRUD Generator based on CRUDBooster, featuri
 - [Database Support and Compatibility](./database-support.md)
 - [Button Action Styles and Maintenance](./button-action-styles.md)
 
+## API
+- [JWT Authentication for API](./api-jwt-authentication.md)
+- [API Documentation](./api-documentation.md)
+
 ## Grid Data Column Section
 - [How To Add Column In Grid Data](./how-to-add-column.md)
 - [How To Join Table In Grid Data](./how-to-join-in-grid-data.md)

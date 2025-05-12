@@ -207,8 +207,8 @@
             }
         }
     }
-    // Render the pagination with safe parameters
-    $paginationHtml = $result->appends($paginationParams)->links();
+    // Render the pagination with safe parameters and using Bootstrap 4 theme
+    $paginationHtml = $result->appends($paginationParams)->links('webilliumcms::pagination.bootstrap-4');
     $paginationHtml = urldecode(str_replace("/?","?", $paginationHtml));
 @endphp
 {!! $paginationHtml !!}

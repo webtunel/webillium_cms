@@ -28,7 +28,8 @@
         "intervention/image": "^2.7",
         "laravel/framework": "^10.0",
         "krlove/code-generator": "^1.0",
-        "opis/closure": "^3.6.3"
+        "opis/closure": "^3.6.3",
+        "firebase/php-jwt": "^6.4"
     },
     "autoload": {
         "psr-4": {

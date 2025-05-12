@@ -24,9 +24,13 @@ class CRUDBoosterServiceProvider extends ServiceProvider
     {
 
         $this->loadViewsFrom(__DIR__.'/views', 'crudbooster');
+        $this->loadViewsFrom(__DIR__.'/views', 'webilliumcms');
         $this->loadMigrationsFrom(__DIR__.'/database/migrations');
         $this->loadTranslationsFrom(__DIR__.'/localization','crudbooster');
         $this->loadRoutesFrom(__DIR__.'/routes.php');
+
+        // Set default pagination to use bootstrap styles
+        \Illuminate\Pagination\Paginator::useBootstrap();
 
         // Register PostgreSQL array type mappings globally
         try {

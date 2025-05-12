@@ -4,6 +4,7 @@ namespace webtunel\webilliumcms\helpers;
 
 
 use webtunel\webilliumcms\middlewares\CBAuthAPI;
+use webtunel\webilliumcms\middlewares\CBJwtAuth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Route;
 use DB;
@@ -25,6 +26,16 @@ class CBRouter
         // API Authentication
         Route::group(['middleware'=>['api'],'namespace'=>static::$cb_namespace], function() {
             Route::post("api/get-token","ApiAuthorizationController@postGetToken");
+            
+            // JWT Authentication routes (no auth required)
+            Route::post("api/jwt/login", "ApiJwtAuthController@postLogin");
+            Route::post("api/jwt/refresh", "ApiJwtAuthController@postRefreshToken");
+        });
+
+        // JWT Protected routes
+        Route::group(['middleware' => ['api', CBJwtAuth::class], 'namespace' => static::$cb_namespace], function() {
+            Route::get("api/jwt/me", "ApiJwtAuthController@getMe");
+            Route::post("api/jwt/logout", "ApiJwtAuthController@postLogout");
         });
 
         Route::group(['middleware' => ['api', CBAuthAPI::class], 'namespace' => 'App\Http\Controllers'], function () {
@@ -185,12 +196,10 @@ class CBRouter
     }
 
     public static function route() {
-
         static::apiRoute();
         static::uploadRoute();
         static::authRoute();
         static::userControllerRoute();
         static::cbRoute();
     }
-
 }

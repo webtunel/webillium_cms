@@ -35,7 +35,7 @@ $validation_raw = isset($form['validation']) ? explode('|', $form['validation'])
 if ($validation_raw) {
     foreach ($validation_raw as $vr) {
         $vr_a = explode(':', $vr);
-        if ($vr_a[1]) {
+        if (isset($vr_a[1]) && $vr_a[1]) {
             $key = $vr_a[0];
             $validation[$key] = $vr_a[1];
         } else {

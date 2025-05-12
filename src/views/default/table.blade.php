@@ -50,7 +50,7 @@
     <input type='hidden' name='_token' value='{{csrf_token()}}'/>
     <table id='table_dashboard' class="table table-hover table-striped table-bordered">
         <thead>
-        <tr class="active" style="background-color: var(--primary-color, #6777ef);">
+        <tr class="active" style="background-color: {{$mainColor ?? '#d62828'}};">
             <?php if($button_bulk_action):?>
             <th width='3%' style="color: #fff;"><input type='checkbox' id='checkall'/></th>
             <?php endif;?>
@@ -157,7 +157,7 @@
 
 
         <tfoot>
-        <tr style="background-color: var(--primary-color, #6777ef);">
+        <tr style="background-color: {{$mainColor ?? '#d62828'}};">
             <?php if($button_bulk_action):?>
             <th style="color: #fff;">&nbsp;</th>
             <?php endif;?>

@@ -154,12 +154,16 @@ class PrivilegesController extends CBController
         $priv = Request::input("privileges");
         if ($priv) {
             foreach ($priv as $id_modul => $data) {
+                if (!is_array($data)) {
+                    continue; // Skip if not an array
+                }
+
                 $arrs = [];
-                $arrs['is_visible'] = @$data['is_visible'] ?: 0;
-                $arrs['is_create'] = @$data['is_create'] ?: 0;
-                $arrs['is_read'] = @$data['is_read'] ?: 0;
-                $arrs['is_edit'] = @$data['is_edit'] ?: 0;
-                $arrs['is_delete'] = @$data['is_delete'] ?: 0;
+                $arrs['is_visible'] = isset($data['is_visible']) ? $data['is_visible'] : 0;
+                $arrs['is_create'] = isset($data['is_create']) ? $data['is_create'] : 0;
+                $arrs['is_read'] = isset($data['is_read']) ? $data['is_read'] : 0;
+                $arrs['is_edit'] = isset($data['is_edit']) ? $data['is_edit'] : 0;
+                $arrs['is_delete'] = isset($data['is_delete']) ? $data['is_delete'] : 0;
                 $arrs['id_cms_privileges'] = $id;
                 $arrs['id_cms_moduls'] = $id_modul;
                 DB::table("cms_privileges_roles")->insert($arrs);
@@ -243,25 +247,29 @@ class PrivilegesController extends CBController
         if ($priv) {
 
             foreach ($priv as $id_modul => $data) {
+                if (!is_array($data)) {
+                    continue; // Skip if not an array
+                }
+
                 //Check Menu
                 $module = DB::table('cms_moduls')->where('id', $id_modul)->first();
                 $currentPermission = DB::table('cms_privileges_roles')->where('id_cms_moduls', $id_modul)->where('id_cms_privileges', $id)->first();
 
                 if ($currentPermission) {
                     $arrs = [];
-                    $arrs['is_visible'] = @$data['is_visible'] ?: 0;
-                    $arrs['is_create'] = @$data['is_create'] ?: 0;
-                    $arrs['is_read'] = @$data['is_read'] ?: 0;
-                    $arrs['is_edit'] = @$data['is_edit'] ?: 0;
-                    $arrs['is_delete'] = @$data['is_delete'] ?: 0;
+                    $arrs['is_visible'] = isset($data['is_visible']) ? $data['is_visible'] : 0;
+                    $arrs['is_create'] = isset($data['is_create']) ? $data['is_create'] : 0;
+                    $arrs['is_read'] = isset($data['is_read']) ? $data['is_read'] : 0;
+                    $arrs['is_edit'] = isset($data['is_edit']) ? $data['is_edit'] : 0;
+                    $arrs['is_delete'] = isset($data['is_delete']) ? $data['is_delete'] : 0;
                     DB::table('cms_privileges_roles')->where('id', $currentPermission->id)->update($arrs);
                 } else {
                     $arrs = [];
-                    $arrs['is_visible'] = @$data['is_visible'] ?: 0;
-                    $arrs['is_create'] = @$data['is_create'] ?: 0;
-                    $arrs['is_read'] = @$data['is_read'] ?: 0;
-                    $arrs['is_edit'] = @$data['is_edit'] ?: 0;
-                    $arrs['is_delete'] = @$data['is_delete'] ?: 0;
+                    $arrs['is_visible'] = isset($data['is_visible']) ? $data['is_visible'] : 0;
+                    $arrs['is_create'] = isset($data['is_create']) ? $data['is_create'] : 0;
+                    $arrs['is_read'] = isset($data['is_read']) ? $data['is_read'] : 0;
+                    $arrs['is_edit'] = isset($data['is_edit']) ? $data['is_edit'] : 0;
+                    $arrs['is_delete'] = isset($data['is_delete']) ? $data['is_delete'] : 0;
                     $arrs['id_cms_privileges'] = $id;
                     $arrs['id_cms_moduls'] = $id_modul;
                     DB::table("cms_privileges_roles")->insert($arrs);

@@ -451,7 +451,7 @@
                                        onkeyup="showColumnSuggestLike(this)" class='form-control labels' name='label[]'/></td>
                             <td><input type='text' value='{{$form["name"] ?? ""}}' placeholder="Input field name" onclick='showNameSuggest(this)'
                                        onkeyup="showNameSuggestLike(this)" class='form-control name' name='name[]'/></td>
-                            <td><input type='text' value='{{($form["type"] ?? "")?"text"}}' placeholder="Input field type" onclick='showTypeSuggest(this)'
+                            <td><input type='text' value='{{$form["type"] ?? "text"}}' placeholder="Input field type" onclick='showTypeSuggest(this)'
                                        onkeyup="showTypeSuggestLike(this)" class='form-control type' name='type[]'/></td>
                             <td><input type='text' value='{{$form["validation"] ?? ""}}' class='form-control validation' onclick="showValidationSuggest(this)"
                                        onkeyup="showValidationSuggestLike(this)" name='validation[]' value='required' placeholder='Enter Laravel Validation'/>

@@ -82,11 +82,16 @@
                     <label for="">Icon</label>
                     <select name="icon" id="icon" required class="form-control form-control-sm select2">
                         @foreach($fontawesome as $f)
-                            <option {{ $row->icon == 'fa fa-'.$f ? "selected" : "" }} value="fa fa-{{$f}}">
+                            <option {{ ($row->icon == 'fa fa-'.$f || $row->icon == 'fas fa-'.$f) ? "selected" : "" }} value="fa fa-{{$f}}">
                                 <i class="fa fa-{{$f}}"></i> {{$f}}
                             </option>
                         @endforeach
                     </select>
+                    @if($row->icon)
+                    <div class="help-block">
+                        Current icon: <i class="{{$row->icon}}"></i> ({{$row->icon}})
+                    </div>
+                    @endif
                 </div>
                 <div class="form-group">
                     <label for="">Module Slug</label>

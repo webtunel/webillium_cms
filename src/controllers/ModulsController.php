@@ -353,8 +353,18 @@ class ModulsController extends CBController
             try {
                 $row = DB::table($this->table)->where('id', $id)->first();
 
-                // Log the row for debugging
-                \Log::info("Module data for ID $id:", (array)$row);
+                // Enhanced debugging
+                if ($row) {
+                    \Log::info("Module data for ID $id found:", [
+                        'id' => $row->id,
+                        'name' => $row->name,
+                        'table_name' => $row->table_name,
+                        'icon' => $row->icon,
+                        'path' => $row->path
+                    ]);
+                } else {
+                    \Log::warning("Module with ID $id not found in database.");
+                }
 
                 if (!$row) {
                     // If module not found, set default values
@@ -365,7 +375,6 @@ class ModulsController extends CBController
                         'icon' => 'fa fa-cog',
                         'path' => '',
                     ];
-                    \Log::warning("Module with ID $id not found in database.");
                 }
             } catch (\Exception $e) {
                 \Log::error("Error fetching module data: " . $e->getMessage());
@@ -379,7 +388,21 @@ class ModulsController extends CBController
             }
         }
 
-        return view("crudbooster::module_generator.step1", compact("tables_list", "fontawesome", "row", "id"));
+        // Debug the final row object being passed to the view
+        \Log::info("Final row object passed to step1 view:", (array)$row);
+
+        // Try to find the view in various namespaces
+        $viewPath = "crudbooster::module_generator.step1";
+        if (!view()->exists($viewPath)) {
+            $viewPath = "webilliumcms::module_generator.step1";
+            if (!view()->exists($viewPath)) {
+                $viewPath = "module_generator.step1";
+            }
+        }
+
+        \Log::info("Using view path: $viewPath");
+
+        return view($viewPath, compact("tables_list", "fontawesome", "row", "id"));
     }
 
     public function getStep2($id)
@@ -516,7 +539,18 @@ class ModulsController extends CBController
             $data['table_list'] = $table_list;
             $data['cb_col'] = $cb_col;
 
-            return view('crudbooster::module_generator.step2', $data);
+            // Try to find the view in various namespaces
+            $viewPath = "crudbooster::module_generator.step2";
+            if (!view()->exists($viewPath)) {
+                $viewPath = "webilliumcms::module_generator.step2";
+                if (!view()->exists($viewPath)) {
+                    $viewPath = "module_generator.step2";
+                }
+            }
+
+            \Log::info("Using view path for step2: $viewPath");
+
+            return view($viewPath, $data);
 
         } catch (\Exception $e) {
             \Log::error("Error in getStep2: " . $e->getMessage());
@@ -785,8 +819,19 @@ class ModulsController extends CBController
             // Sort the types alphabetically
             sort($types);
 
+            // Try to find the view in various namespaces
+            $viewPath = "crudbooster::module_generator.step3";
+            if (!view()->exists($viewPath)) {
+                $viewPath = "webilliumcms::module_generator.step3";
+                if (!view()->exists($viewPath)) {
+                    $viewPath = "module_generator.step3";
+                }
+            }
+
+            \Log::info("Using view path for step3: $viewPath");
+
             // Add the row data for the view to access
-            return view('crudbooster::module_generator.step3', compact('columns', 'cb_form', 'types', 'id', 'row'));
+            return view($viewPath, compact('columns', 'cb_form', 'types', 'id', 'row'));
 
         } catch (\Exception $e) {
             \Log::error("Error in getStep3: " . $e->getMessage());
@@ -969,7 +1014,18 @@ class ModulsController extends CBController
                 }
             }
 
-            return view('crudbooster::module_generator.step4', $data);
+            // Try to find the view in various namespaces
+            $viewPath = "crudbooster::module_generator.step4";
+            if (!view()->exists($viewPath)) {
+                $viewPath = "webilliumcms::module_generator.step4";
+                if (!view()->exists($viewPath)) {
+                    $viewPath = "module_generator.step4";
+                }
+            }
+
+            \Log::info("Using view path for step4: $viewPath");
+
+            return view($viewPath, $data);
 
         } catch (\Exception $e) {
             \Log::error("Error in getStep4: " . $e->getMessage());

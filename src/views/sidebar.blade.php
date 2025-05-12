@@ -28,11 +28,11 @@
 
             @foreach(CRUDBooster::sidebarMenu() as $menu)
                 <li class="dropdown">
-                    <a class="nav-link @if(!empty($menu->children))has-dropdown @endif" href='{{ ($menu->is_broken)?"javascript:alert('".cbLang('controller_route_404')."')":$menu->url }}'>
+                    <a class="nav-link @if(isset($menu->children) && !empty($menu->children))has-dropdown @endif" href='{{ ($menu->is_broken)?"javascript:alert('".cbLang('controller_route_404')."')":$menu->url }}'>
                         <i class='{{$menu->icon}} {{($menu->color)?"text-".$menu->color:""}}'></i>
                         <span>{{$menu->name}}</span>
                     </a>
-                    @if(!empty($menu->children))
+                    @if(!empty($menu->children) && isset($menu->children))
                         <ul class="dropdown-menu">
                             @foreach($menu->children as $child)
                                 <li data-id='{{$child->id}}'>

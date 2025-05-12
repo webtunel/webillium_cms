@@ -500,6 +500,9 @@ class CRUDBooster
             $menu->url = $url;
             $menu->url_path = trim(str_replace(url('/'), '', $url), "/");
 
+            // Initialize children property for all menu items
+            $menu->children = [];
+
             $myPrivilegeId = self::myPrivilegeId();
             $child = DB::table('cms_menus')
                 ->join('cms_menus_privileges', 'cms_menus.id', '=', 'cms_menus_privileges.id_cms_menus')

@@ -156,7 +156,7 @@
                                     </em>
                                 </div>
                                 <ul>
-                                    @if($menu->children)
+                                    @if(isset($menu->children) && $menu->children)
                                         @foreach($menu->children as $child)
                                             @php
                                                 $privileges = DB::table('cms_menus_privileges')
@@ -204,7 +204,7 @@
                                                 onclick='{{CRUDBooster::deleteConfirm(route("MenusControllerGetDelete",["id"=>$menu->id]))}}'
                                                 href='javascript:void(0)'></a></span></div>
                                 <ul>
-                                    @if($menu->children)
+                                    @if(isset($menu->children) && $menu->children)
                                         @foreach($menu->children as $child)
                                             <li data-id='{{$child->id}}' data-name='{{$child->name}}' class="list-group-item">
                                                 <div><i class='{{$child->icon}}'></i> {{$child->name}} <span class='pull-right' style="float: right;"><a class='btn btn-icon btn-primary fas fa-edit'

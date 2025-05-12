@@ -905,17 +905,30 @@ class ModulsController extends CBController
 
     public function postStep4()
     {
-        $this->cbLoader();
+        try {
+            $this->cbLoader();
 
-        $post = Request::all();
-        $id = $post['id'];
+            $post = Request::all();
+            \Log::info("postStep4 form data:", $post);
 
-        $label = $post['label'];
-        $name = $post['name'];
-        $width = $post['width'];
-        $type = $post['type'];
-        $option = $post['option'];
-        $validation = $post['validation'];
+            // Make sure the required parameters exist
+            if (!isset($post['id'])) {
+                return redirect()->back()->with(['message' => 'Missing module ID', 'message_type' => 'warning']);
+            }
+
+            $id = $post['id'];
+
+            // Check if all required arrays exist
+            if (!isset($post['label']) || !isset($post['name']) || !isset($post['type'])) {
+                return redirect()->back()->with(['message' => 'Missing required form fields', 'message_type' => 'warning']);
+            }
+
+            $label = $post['label'];
+            $name = $post['name'];
+            $width = isset($post['width']) ? $post['width'] : [];
+            $type = $post['type'];
+            $option = isset($post['option']) ? $post['option'] : [];
+            $validation = isset($post['validation']) ? $post['validation'] : [];
 
         $row = DB::table('cms_moduls')->where('id', $id)->first();
 
@@ -929,9 +942,9 @@ class ModulsController extends CBController
                 $form['label'] = $l;
                 $form['name'] = $name[$i];
                 $form['type'] = $type[$i];
-                $form['validation'] = $validation[$i];
-                $form['width'] = $width[$i];
-                if ($option[$i]) {
+                $form['validation'] = isset($validation[$i]) ? $validation[$i] : '';
+                $form['width'] = isset($width[$i]) ? $width[$i] : '';
+                if (isset($option[$i]) && is_array($option[$i])) {
                     $form = array_merge($form, $option[$i]);
                 }
 
@@ -991,6 +1004,11 @@ class ModulsController extends CBController
         file_put_contents(app_path('Http/Controllers/'.$row->controller.'.php'), $file_controller);
 
         return redirect(Route("ModulsControllerGetStep4")."/".$id);
+        } catch (\Exception $e) {
+            \Log::error("Error in postStep4: " . $e->getMessage());
+            \Log::error("Error trace: " . $e->getTraceAsString());
+            return redirect()->back()->with(['message' => 'Error processing form: ' . $e->getMessage(), 'message_type' => 'warning']);
+        }
     }
 
     public function getStep4($id)

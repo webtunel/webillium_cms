@@ -438,14 +438,14 @@
 
                                 @foreach($index_button as $ib)
                                     <a href='{{$ib["url"]}}' id='{{str_slug($ib["label"])}}'
-                                       class='btn {{($ib['color'])?'btn-'.$ib['color']:'btn-primary'}} btn-sm'
-                                       @if($ib['onClick']) onClick='return {{$ib["onClick"]}}' @endif
-                                       @if($ib['onMouseOver']) onMouseOver='return {{$ib["onMouseOver"]}}' @endif
-                                       @if($ib['onMouseOut']) onMouseOut='return {{$ib["onMouseOut"]}}' @endif
-                                       @if($ib['onKeyDown']) onKeyDown='return {{$ib["onKeyDown"]}}' @endif
-                                       @if($ib['onLoad']) onLoad='return {{$ib["onLoad"]}}' @endif
+                                       class='btn {{(isset($ib['color']) && $ib['color'])?'btn-'.$ib['color']:'btn-primary'}} btn-sm'
+                                       @if(isset($ib['onClick']) && $ib['onClick']) onClick='return {{$ib["onClick"]}}' @endif
+                                       @if(isset($ib['onMouseOver']) && $ib['onMouseOver']) onMouseOver='return {{$ib["onMouseOver"]}}' @endif
+                                       @if(isset($ib['onMouseOut']) && $ib['onMouseOut']) onMouseOut='return {{$ib["onMouseOut"]}}' @endif
+                                       @if(isset($ib['onKeyDown']) && $ib['onKeyDown']) onKeyDown='return {{$ib["onKeyDown"]}}' @endif
+                                       @if(isset($ib['onLoad']) && $ib['onLoad']) onLoad='return {{$ib["onLoad"]}}' @endif
                                     >
-                                        <i class='{{$ib["icon"]}}'></i> {{$ib["label"]}}
+                                        <i class='{{isset($ib["icon"]) ? $ib["icon"] : "fa fa-check"}}'></i> {{$ib["label"]}}
                                     </a>
                             @endforeach
                         @endif

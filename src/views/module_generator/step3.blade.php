@@ -76,6 +76,43 @@
                 position: relative;
                 z-index: 1;
             }
+
+            /* Modal styling */
+            #myModal .modal-body {
+                padding: 20px;
+                max-height: 70vh;
+                overflow-y: auto;
+            }
+
+            #myModal .form-group {
+                margin-bottom: 15px;
+            }
+
+            #myModal .form-group label {
+                display: block;
+                font-weight: 600;
+                margin-bottom: 5px;
+            }
+
+            #myModal .alert {
+                margin-bottom: 20px;
+            }
+
+            #myModal .form-control {
+                width: 100%;
+                padding: 8px 12px;
+                border: 1px solid #d2d6de;
+                border-radius: 3px;
+            }
+
+            /* Option area styling for hidden options in the table */
+            .option_area {
+                padding: 10px;
+                background-color: #f9f9f9;
+                border: 1px solid #eee;
+                border-radius: 3px;
+                margin-top: 10px;
+            }
         </style>
     @endpush
 
@@ -411,56 +448,104 @@
                 })
 
                 var current_option_area = null;
+                var current_field_type = '';
 
                 $(document).on('click', '.btn-options', function () {
+                    // Clear previous content
                     $('#myModal .modal-body').empty();
 
+                    // Get the option area and field type
                     current_option_area = $(this).next('.option_area');
+                    current_field_type = $(this).closest('tr').find('input[name="type[]"]').val() || 'text';
 
-                    var clone = $(this).next('.option_area').clone();
-                    clone.removeAttr('style');
-                    clone.appendTo('#myModal .modal-body');
+                    // Update modal title to include field type
+                    $('#myModal .modal-title').html('<i class="fa fa-cog"></i> Options for <strong>' + current_field_type + '</strong> Field');
 
+                    // If the option area is empty, show a message
+                    if (current_option_area.children().length === 0) {
+                        $('#myModal .modal-body').html(
+                            '<div class="alert alert-info">' +
+                            '<i class="fa fa-info-circle"></i> ' +
+                            'No options available for this field type or you need to select a field type first.' +
+                            '</div>'
+                        );
+                    } else {
+                        // Clone the option area content and add it to the modal
+                        var clone = current_option_area.clone();
+                        clone.removeAttr('style');
+                        clone.css('display', 'block');
+                        clone.appendTo('#myModal .modal-body');
+                    }
+
+                    // Show the modal
                     $('#myModal').modal('show');
                 })
 
                 $('#myModal .btn-save-option').click(function () {
+                    // Check if modal body is empty or has error message
+                    if ($('#myModal .modal-body').children().length === 0 ||
+                        $('#myModal .modal-body').find('.alert-info').length > 0) {
+                        $('#myModal').modal('hide');
+                        return;
+                    }
 
-                    //Validation
+                    // Validation for required fields
                     var i_required = [];
                     $('#myModal .modal-body .required').each(function () {
                         var value = $(this).val();
                         var name = $(this).attr('name');
-                        if (value == '') {
+                        if (value === '') {
                             i_required.push(name);
+                            // Highlight the field
+                            $(this).addClass('is-invalid').css('border-color', '#f44336');
+                        } else {
+                            $(this).removeClass('is-invalid').css('border-color', '');
                         }
                     });
 
                     if (i_required.length > 0) {
-                        console.log(i_required);
-                        alert("Some these fields are required : " + i_required.join(", "));
+                        // Show validation message in the modal instead of an alert
+                        if ($('#myModal .modal-body .validation-error').length === 0) {
+                            $('#myModal .modal-body').prepend(
+                                '<div class="alert alert-danger validation-error">' +
+                                '<strong>Error:</strong> The following fields are required: ' + i_required.join(", ") +
+                                '</div>'
+                            );
+                        }
                         return false;
                     }
 
-                    //Validation
+                    // Validation for required-one fields
                     var i_required_one = [];
                     $('#myModal .modal-body .required-one').each(function () {
                         var value = $(this).val();
                         var name = $(this).attr('name');
-                        if (value == '') {
+                        if (value === '') {
                             i_required_one.push(name);
                         }
-                    })
+                    });
 
-                    if (i_required_one.length > 0 && i_required_one.length == $('#myModal .modal-body .required-one').length) {
-                        alert("One of these fields are required : " + i_required_one.join(", "));
+                    if (i_required_one.length > 0 && i_required_one.length === $('#myModal .modal-body .required-one').length) {
+                        // Show validation message in the modal instead of an alert
+                        if ($('#myModal .modal-body .validation-error').length === 0) {
+                            $('#myModal .modal-body').prepend(
+                                '<div class="alert alert-danger validation-error">' +
+                                '<strong>Error:</strong> At least one of these fields is required: ' + i_required_one.join(", ") +
+                                '</div>'
+                            );
+                        }
                         return false;
                     }
 
+                    // Remove any validation error messages
+                    $('#myModal .modal-body .validation-error').remove();
+
+                    // Copy the options back to the original option area
                     current_option_area.empty();
-                    var clone = $('#myModal .option_area').children().clone();
+                    var clone = $('#myModal .modal-body > .option_area').children().clone();
                     current_option_area.html(clone);
-                    $('#myModal .modal-body').empty();
+
+                    // Close the modal
                     $('#myModal').modal('hide');
                 })
 
@@ -469,18 +554,18 @@
     @endpush
 
     <div id="myModal" class="modal fade" tabindex="-1" role="dialog">
-        <div class="modal-dialog  modal-dialog-centered" role="document">
+        <div class="modal-dialog  modal-dialog-centered modal-lg" role="document">
             <div class="modal-content">
                 <div class="modal-header">
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-                    <h4 class="modal-title"><i class='fa fa-cog'></i> Options</h4>
+                    <h4 class="modal-title"><i class='fa fa-cog'></i> Field Options</h4>
                 </div>
                 <div class="modal-body">
-                    <p>One fine body&hellip;</p>
+                    <!-- Options will be loaded here -->
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-                    <button type="button" class="btn-save-option btn btn-primary">Save changes</button>
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn-save-option btn btn-primary">Save Options</button>
                 </div>
             </div><!-- /.modal-content -->
         </div><!-- /.modal-dialog -->
@@ -529,14 +614,34 @@
                                 <a class='btn btn-primary btn-options' href='javascript:;'><i class='fa fa-cog'></i> Options</a>
                                 <div class='option_area' style="display: none">
                                     <?php
-
+                                    // Get the field type with fallback to text
                                     $type = isset($form["type"]) ? ($form["type"] ?: "text") : "text";
-                                    $types_path = base_path('vendor/crocodicstudio/crudbooster/src/views/default/type_components/'.$type.'/info.json');
-                                    if(file_exists($types_path)) {
-                                        $types = file_get_contents($types_path);
-                                        $types = json_decode($types);
-                                    } else {
-                                        $types = null;
+
+                                    // Try multiple potential paths for type components
+                                    $paths = [
+                                        // First try webillium package path
+                                        base_path('vendor/webtunel/webilliumcms/src/views/default/type_components/'.$type.'/info.json'),
+                                        // Then try original crudbooster path
+                                        base_path('vendor/crocodicstudio/crudbooster/src/views/default/type_components/'.$type.'/info.json'),
+                                        // Then try local path
+                                        base_path('resources/views/vendor/crudbooster/type_components/'.$type.'/info.json')
+                                    ];
+
+                                    $types = null;
+                                    foreach ($paths as $types_path) {
+                                        if(file_exists($types_path)) {
+                                            $types = file_get_contents($types_path);
+                                            $types = json_decode($types);
+                                            break;
+                                        }
+                                    }
+
+                                    // If no info file found, create a basic structure
+                                    if (!$types) {
+                                        $types = (object)[
+                                            'title' => ucfirst($type),
+                                            'alert' => 'This is a basic '.$type.' input field'
+                                        ];
                                     }
 
                                     if($types):

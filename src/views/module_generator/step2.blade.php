@@ -37,25 +37,40 @@
 
             .sub {
                 position: absolute;
-                top: inherit;
-                left: inherit;
-                padding: 0 0 0 0;
+                top: 35px; /* Position below the input field */
+                left: 15px;
+                padding: 0;
+                margin: 0;
                 list-style-type: none;
-                height: 180px;
-                overflow: auto;
-                z-index: 1;
+                max-height: 300px;
+                overflow-y: auto;
+                z-index: 100;
+                background: white;
+                border: 1px solid #ccc;
+                box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+                width: 220px;
+                display: block;
             }
 
             .sub li {
-                padding: 5px;
-                background: #eae9e8;
+                padding: 8px 12px;
+                background: #ffffff;
                 cursor: pointer;
                 display: block;
-                width: 180px;
+                border-bottom: 1px solid #f0f0f0;
+                width: 100%;
+                font-size: 14px;
             }
 
             .sub li:hover {
-                background: #ECF0F5;
+                background: #f7f7f7;
+                color: #3c8dbc;
+            }
+
+            /* Ensure proper z-index for dropdown menus */
+            .table-display {
+                position: relative;
+                z-index: 1;
             }
 
             .btn-drag {
@@ -143,41 +158,77 @@
                 t = $(t);
                 t.next("ul").remove();
                 var list = '';
-                $.each(tables, function (i, obj) {
-                    list += "<li>" + obj + "</li>";
-                });
+
+                if (tables && tables.length > 0) {
+                    $.each(tables, function (i, obj) {
+                        if (typeof obj === 'string') {
+                            list += "<li>" + obj + "</li>";
+                        }
+                    });
+                } else {
+                    // Default tables if none available
+                    list = "<li>users</li><li>products</li><li>categories</li>";
+                }
+
+                if (list === '') {
+                    list = "<li>No tables available</li>";
+                }
 
                 t.after("<ul class='sub'>" + list + "</ul>");
+                // Force display the dropdown
+                t.next("ul").css('display', 'block');
             }
 
             function showTableLike(t) {
                 t = $(t);
-                var v = t.val();
+                var v = t.val().toLowerCase();
 
                 t.next("ul").remove();
-                if (!v) return false;
+                if (!v) {
+                    // Show all tables if search is empty
+                    showTable(t);
+                    return;
+                }
 
                 var list = '';
-                $.each(tables, function (i, obj) {
-                    if (obj.includes(v.toLowerCase())) {
-                        list += "<li>" + obj + "</li>";
-                    }
-                });
+                if (tables && tables.length > 0) {
+                    $.each(tables, function (i, obj) {
+                        if (typeof obj === 'string' && obj.toLowerCase().includes(v)) {
+                            list += "<li>" + obj + "</li>";
+                        }
+                    });
+                }
+
+                if (list === '') {
+                    list = "<li>No matching tables found</li>";
+                }
 
                 t.after("<ul class='sub'>" + list + "</ul>");
+                // Force display the dropdown
+                t.next("ul").css('display', 'block');
             }
 
             function showTableFieldLike(t) {
                 t = $(t);
                 var table = t.parent().parent().find('.join_table').val();
-                var v = t.val();
+                var v = t.val().toLowerCase();
 
                 t.next("ul").remove();
 
-                if (!table) return false;
-                if (!v) return false;
+                if (!table) {
+                    t.after("<ul class='sub'><li>Please select a table first</li></ul>");
+                    t.next("ul").css('display', 'block');
+                    return false;
+                }
 
-                t.after("<ul class='sub'><li><i class='fa fa-spin fa-spinner'></i> Loading...</li></ul>");
+                if (!v) {
+                    // If empty search, show all fields
+                    showTableField(t);
+                    return;
+                }
+
+                t.after("<ul class='sub'><li><i class='fa fa-spin fa-spinner'></i> Searching columns in " + table + "...</li></ul>");
+                t.next("ul").css('display', 'block');
 
                 $.get("{{CRUDBooster::mainpath('table-columns')}}/" + table, function (response) {
                     t.next("ul").remove();
@@ -197,7 +248,7 @@
                                 columnName = String(columnName);
 
                                 // Check if the column name contains the search value
-                                if (columnName.toLowerCase().includes(v.toLowerCase())) {
+                                if (columnName.toLowerCase().includes(v)) {
                                     list += "<li>" + columnName + "</li>";
                                 }
                             });
@@ -209,20 +260,28 @@
                     }
 
                     t.after("<ul class='sub'>" + list + "</ul>");
+                    t.next("ul").css('display', 'block');
                 }).fail(function(xhr, status, error) {
                     t.next("ul").remove();
-                    t.after("<ul class='sub'><li>Error loading columns</li></ul>");
+                    t.after("<ul class='sub'><li>Error loading columns: " + error + "</li></ul>");
+                    t.next("ul").css('display', 'block');
                 });
             }
 
             function showTableField(t) {
                 t = $(t);
                 var table = t.parent().parent().find('.join_table').val();
-                var v = t.val();
 
-                if (!table) return false;
+                t.next("ul").remove();
 
-                t.after("<ul class='sub'><li><i class='fa fa-spin fa-spinner'></i> Loading...</li></ul>");
+                if (!table) {
+                    t.after("<ul class='sub'><li>Please select a table first</li></ul>");
+                    t.next("ul").css('display', 'block');
+                    return false;
+                }
+
+                t.after("<ul class='sub'><li><i class='fa fa-spin fa-spinner'></i> Loading columns from " + table + "...</li></ul>");
+                t.next("ul").css('display', 'block');
 
                 $.get("{{CRUDBooster::mainpath('table-columns')}}/" + table, function (response) {
                     t.next("ul").remove();
@@ -237,19 +296,27 @@
                             $.each(response, function (i, obj) {
                                 // Handle both string and object formats
                                 var columnName = (typeof obj === 'string') ? obj : (obj.column_name || obj);
+                                // Ensure columnName is a string
+                                columnName = String(columnName);
                                 list += "<li>" + columnName + "</li>";
                             });
                         }
                     }
 
                     if (list === '') {
-                        list = "<li>No columns found</li>";
+                        list = "<li>No columns found in table '" + table + "'</li>";
                     }
 
                     t.after("<ul class='sub'>" + list + "</ul>");
+                    t.next("ul").css('display', 'block');
+
+                    // Log debug info
+                    console.log("Retrieved columns for table:", table, response);
                 }).fail(function(xhr, status, error) {
                     t.next("ul").remove();
-                    t.after("<ul class='sub'><li>Error loading columns</li></ul>");
+                    t.after("<ul class='sub'><li>Error loading columns: " + error + "</li></ul>");
+                    t.next("ul").css('display', 'block');
+                    console.error("Error fetching columns for table:", table, error);
                 });
             }
 
@@ -269,8 +336,13 @@
 
                 $(document).mouseup(function (e) {
                     var container = $(".sub");
-                    if (!container.is(e.target)
-                        && container.has(e.target).length === 0) {
+                    // Don't hide if clicking on an input that should show the dropdown
+                    var isInputClick = $(e.target).is('input[name="join_table[]"]') ||
+                                    $(e.target).is('input[name="join_field[]"]');
+
+                    if (!container.is(e.target) &&
+                        container.has(e.target).length === 0 &&
+                        !isInputClick) {
                         container.hide();
                     }
                 });

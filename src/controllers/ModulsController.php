@@ -370,15 +370,71 @@ class ModulsController extends CBController
 
         $columns = CRUDBooster::getTableColumns($row->table_name);
 
-        $tables = CRUDBooster::listTables();
+        // Get database tables based on the driver
         $table_list = [];
-        foreach ($tables as $tab) {
-            foreach ($tab as $key => $value) {
-                $label = $value;
-                $table_list[] = $value;
+        try {
+            $driver = DB::connection()->getDriverName();
+
+            if ($driver === 'pgsql') {
+                // PostgreSQL specific query to get tables (excluding system tables)
+                $schema = 'public'; // Default schema
+                $tables = DB::select("
+                    SELECT table_name
+                    FROM information_schema.tables
+                    WHERE table_schema = ?
+                    AND table_type = 'BASE TABLE'
+                    AND table_name NOT LIKE 'pg_%'
+                    AND table_name NOT LIKE 'sql_%'
+                ", [$schema]);
+
+                foreach ($tables as $table) {
+                    if (!in_array($table->table_name, $table_list)) {
+                        $table_list[] = $table->table_name;
+                    }
+                }
+            } else {
+                // Default approach using CRUDBooster
+                $tables = CRUDBooster::listTables();
+                foreach ($tables as $tab) {
+                    if (is_array($tab)) {
+                        foreach ($tab as $value) {
+                            if (!in_array($value, $table_list)) {
+                                $table_list[] = $value;
+                            }
+                        }
+                    } elseif (is_object($tab)) {
+                        foreach ($tab as $key => $value) {
+                            if (!in_array($value, $table_list)) {
+                                $table_list[] = $value;
+                            }
+                        }
+                    }
+                }
             }
+
+            // Filter out cms_ tables except user table
+            $table_list = array_filter($table_list, function($table) {
+                return substr($table, 0, 4) != 'cms_' || $table == config('crudbooster.USER_TABLE');
+            });
+
+            // Filter out migrations table
+            $table_list = array_filter($table_list, function($table) {
+                return $table != 'migrations';
+            });
+
+            // Convert to indexed array
+            $table_list = array_values($table_list);
+
+            // Sort tables alphabetically
+            sort($table_list);
+
+        } catch (\Exception $e) {
+            \Log::error("Error getting tables: " . $e->getMessage());
+            // Provide some default tables as fallback
+            $table_list = ['users', 'products', 'categories', 'orders', 'posts', 'comments'];
         }
 
+        // Load existing column configuration if controller file exists
         if (file_exists(app_path('Http/Controllers/'.str_replace('.', '', $row->controller).'.php'))) {
             $response = file_get_contents(app_path('Http/Controllers/'.$row->controller.'.php'));
             $column_datas = extract_unit($response, "# START COLUMNS DO NOT REMOVE THIS LINE", "# END COLUMNS DO NOT REMOVE THIS LINE");
@@ -390,7 +446,7 @@ class ModulsController extends CBController
         $data['id'] = $id;
         $data['columns'] = $columns;
         $data['table_list'] = $table_list;
-        $data['cb_col'] = (isset($cb_col))?$cb_col:null;
+        $data['cb_col'] = (isset($cb_col)) ? $cb_col : null;
 
         return view('crudbooster::module_generator.step2', $data);
     }

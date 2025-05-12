@@ -963,6 +963,10 @@ class CRUDBooster
 
     public static function parseSqlTable($table)
     {
+        // Guard against empty values
+        if (empty($table)) {
+            return ["table" => "", "database" => config('crudbooster.MAIN_DB_DATABASE')];
+        }
 
         $f = explode('.', $table);
 
@@ -974,7 +978,7 @@ class CRUDBooster
             return ["table" => $f[0], "schema" => $f[1], "table" => $f[2]];
         }
 
-        return false;
+        return ["table" => "", "database" => config('crudbooster.MAIN_DB_DATABASE')];
     }
 
     public static function putCache($section, $cache_name, $cache_value)
@@ -1101,6 +1105,11 @@ class CRUDBooster
 
     public static function getForeignKey($parent_table, $child_table)
     {
+        // Guard against empty table names
+        if (empty($parent_table) || empty($child_table)) {
+            return 'id';
+        }
+
         $parent_table = CRUDBooster::parseSqlTable($parent_table)['table'];
         $child_table = CRUDBooster::parseSqlTable($child_table)['table'];
         if (Schema::hasColumn($child_table, 'id_'.$parent_table)) {

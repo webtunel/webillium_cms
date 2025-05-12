@@ -183,10 +183,14 @@
                         // Check if $id is defined, otherwise use null
                         $id_value = isset($id) ? $id : null;
                         if ($id_value) {
-                            $foreignKey = CRUDBooster::getForeignKey($table, isset($form['relationship_table']) ? $form['relationship_table'] : '');
-                            $foreignKey2 = CRUDBooster::getForeignKey($select_table, isset($form['relationship_table']) ? $form['relationship_table'] : '');
-                            $value = DB::table(isset($form['relationship_table']) ? $form['relationship_table'] : '')->where($foreignKey, $id_value);
-                            $value = $value->pluck($foreignKey2)->toArray();
+                            if (isset($form['relationship_table'])) {
+                                $foreignKey = CRUDBooster::getForeignKey($table, $form['relationship_table']);
+                                $foreignKey2 = CRUDBooster::getForeignKey($select_table, $form['relationship_table']);
+                                $value = DB::table($form['relationship_table'])->where($foreignKey, $id_value);
+                                $value = $value->pluck($foreignKey2)->toArray();
+                            } else {
+                                $value = [];
+                            }
                         } else {
                             $value = [];
                         }

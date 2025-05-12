@@ -706,19 +706,23 @@ class CRUDBooster
         }
 
         if (!isset($filter[$field]['value'])) {
+            // For between type, return empty array instead of null
+            if (isset($filter[$field]['type']) && $filter[$field]['type'] == 'between') {
+                return ['', ''];
+            }
             return null;
         }
 
         // Special handling for 'between' filter type which requires an array with indices 0 and 1
         if (isset($filter[$field]['type']) && $filter[$field]['type'] == 'between') {
             if (!is_array($filter[$field]['value'])) {
-                return [null, null]; // Return empty array with two elements for between
+                return ['', '']; // Return empty array with two elements for between
             }
 
             // Ensure the array has both indices 0 and 1
             $value = $filter[$field]['value'];
-            if (!isset($value[0])) $value[0] = null;
-            if (!isset($value[1])) $value[1] = null;
+            if (!isset($value[0])) $value[0] = '';
+            if (!isset($value[1])) $value[1] = '';
 
             return $value;
         }

@@ -187,7 +187,31 @@
 
 </form><!--END FORM TABLE-->
 
-<div class="col-md-8">{!! urldecode(str_replace("/?","?",$result->appends(Request::all())->links()->toHtml())) !!}</div>
+<div class="col-md-8">
+@php
+    // Safely prepare request parameters for pagination
+    $paginationParams = Request::all();
+    // Handle filter_column between values correctly
+    if(isset($paginationParams['filter_column']) && is_array($paginationParams['filter_column'])) {
+        foreach($paginationParams['filter_column'] as $field => $filter) {
+            if(isset($filter['type']) && $filter['type'] == 'between') {
+                // Check if value exists and is an array
+                if(!isset($filter['value']) || !is_array($filter['value'])) {
+                    $paginationParams['filter_column'][$field]['value'] = ['', ''];
+                } else {
+                    // Ensure both values exist to avoid errors
+                    if(!isset($filter['value'][0])) $paginationParams['filter_column'][$field]['value'][0] = '';
+                    if(!isset($filter['value'][1])) $paginationParams['filter_column'][$field]['value'][1] = '';
+                }
+            }
+        }
+    }
+    // Render the pagination with safe parameters
+    $paginationHtml = $result->appends($paginationParams)->links();
+    $paginationHtml = urldecode(str_replace("/?","?", $paginationHtml));
+@endphp
+{!! $paginationHtml !!}
+</div>
 <?php
 $from = $result->count() ? ($result->perPage() * $result->currentPage() - $result->perPage() + 1) : 0;
 $to = $result->perPage() * $result->currentPage() - $result->perPage() + $result->count();

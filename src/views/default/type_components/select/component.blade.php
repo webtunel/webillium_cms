@@ -1,5 +1,5 @@
 <?php $default = ! empty($form['default']) ? $form['default'] : cbLang('text_prefix_option')." ".$form['label'];?>
-@if($form['parent_select'])
+@if(isset($form['parent_select']) && $form['parent_select'])
     <?php
     $parent_select = (count(explode(",", $form['parent_select'])) > 1) ? explode(",", $form['parent_select']) : $form['parent_select'];
     $parent = is_array($parent_select) ? $parent_select[0] : $parent_select;
@@ -58,7 +58,7 @@
     @endpush
 
 @endif
-<div class='form-group {{$header_group_class}} {{ ($errors->first($name))?"has-error":"" }}' id='form-group-{{$name}}' style="{{$form['style'] ?? ''}}">
+<div class='form-group {{$header_group_class}} {{ ($errors->first($name))?"has-error":"" }}' id='form-group-{{$name}}' style="{{isset($form['style']) ? $form['style'] : ''}}">
     <label class='control-label'>{{$form['label']}}
         @if($required)
             <span class='text-danger' title='{!! cbLang('this_field_is_required') !!}'>*</span>

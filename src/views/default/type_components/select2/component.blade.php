@@ -1,6 +1,6 @@
-@if($form['datatable'])
+@if(isset($form['datatable']) && $form['datatable'])
 
-    @if($form['relationship_table'])
+    @if(isset($form['relationship_table']) && $form['relationship_table'])
         @push('bottom')
             <script type="text/javascript">
                 $(function () {
@@ -117,7 +117,7 @@
 
 @endif
 
-<div class='form-group {{$header_group_class}} {{ ($errors->first($name))?"has-error":"" }}' id='form-group-{{$name}}' style="{{@$form['style']}}">
+<div class='form-group {{$header_group_class}} {{ ($errors->first($name))?"has-error":"" }}' id='form-group-{{$name}}' style="{{isset($form['style']) ? $form['style'] : ''}}">
     <label class='control-label'>{{$form['label']}}
         @if($required)
             <span class='text-danger' title='{!! cbLang('this_field_is_required') !!}'>*</span>
@@ -149,8 +149,8 @@
                 @endforeach
             @endif
 
-            @if($form['datatable'])
-                @if($form['relationship_table'])
+            @if(isset($form['datatable']) && $form['datatable'])
+                @if(isset($form['relationship_table']) && $form['relationship_table'])
                     <?php
                     $select_table = explode(',', $form['datatable'])[0];
                     $select_title = explode(',', $form['datatable'])[1];
@@ -239,7 +239,7 @@
         <div class="text-danger">
             {!! $errors->first($name)?"<i class='fa fa-info-circle'></i> ".$errors->first($name):"" !!}
         </div><!--end-text-danger-->
-        <p class='help-block'>{{ @$form['help'] }}</p>
+        <p class='help-block'>{{ $form['help'] ?? '' }}</p>
 
 
 </div>

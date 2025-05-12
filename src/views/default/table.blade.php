@@ -61,7 +61,7 @@
             foreach ($columns as $col) {
                 if (isset($col['visible']) && $col['visible'] === FALSE) continue;
 
-                $sort_column = Request::get('filter_column');
+                $sort_column = Request::has('filter_column') ? Request::get('filter_column') : [];
                 $colname = $col['label'];
                 $name = $col['name'];
                 $field = $col['field_with'];

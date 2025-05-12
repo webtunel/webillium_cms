@@ -692,26 +692,29 @@ class CRUDBooster
 
     public static function getValueFilter($field)
     {
-        $filter = Request::get('filter_column');
-        if ($filter[$field]) {
+        $filter = Request::has('filter_column') ? Request::get('filter_column') : [];
+        if (is_array($filter) && isset($filter[$field]) && isset($filter[$field]['value'])) {
             return $filter[$field]['value'];
         }
+        return null;
     }
 
     public static function getSortingFilter($field)
     {
-        $filter = Request::get('filter_column');
-        if ($filter[$field]) {
+        $filter = Request::has('filter_column') ? Request::get('filter_column') : [];
+        if (is_array($filter) && isset($filter[$field]) && isset($filter[$field]['sorting'])) {
             return $filter[$field]['sorting'];
         }
+        return null;
     }
 
     public static function getTypeFilter($field)
     {
-        $filter = Request::get('filter_column');
-        if ($filter[$field]) {
+        $filter = Request::has('filter_column') ? Request::get('filter_column') : [];
+        if (is_array($filter) && isset($filter[$field]) && isset($filter[$field]['type'])) {
             return $filter[$field]['type'];
         }
+        return null;
     }
 
     public static function stringBetween($string, $start, $end)

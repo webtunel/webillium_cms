@@ -479,7 +479,7 @@ $total = $result->total();
                         <div class="modal-body">
                             <div class="form-group">
                                 <label>{{cbLang("export_dialog_filename")}}</label>
-                                <input type='text' name='filename' class='form-control' required value='Report {{ $module_name }} - {{date("d M Y")}}'/>
+                                <input type='text' name='filename' class='form-control' required value='Report {{ $module_name ?? $table ?? 'Data' }} - {{date("d M Y")}}'/>
                                 <div class='help-block'>
                                     {{cbLang("export_dialog_help_filename")}}
                                 </div>

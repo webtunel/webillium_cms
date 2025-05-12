@@ -17,7 +17,7 @@ if ($form['dataquery']) {
         }
     }
 }
-if ($form['dataenum']) {
+if (isset($form['dataenum']) && $form['dataenum']) {
     echo $value;
 }
 ?>

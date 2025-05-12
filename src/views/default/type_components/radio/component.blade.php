@@ -5,11 +5,11 @@
         @endif
     </label>
 
-        @if(!$form['dataenum'] && !$form['datatable'] && !$form['dataquery'])
+        @if(!isset($form['dataenum']) && !isset($form['datatable']) && !isset($form['dataquery']))
             <em>{{cbLang('there_is_no_option')}}</em>
         @endif
 
-        @if($form['dataenum']!='')
+        @if(isset($form['dataenum']) && $form['dataenum']!='')
             <?php
             @$value = explode(";", $value);
             @array_walk($value, 'trim');

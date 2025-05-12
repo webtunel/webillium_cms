@@ -126,7 +126,7 @@
 
         <select style='width:100%' class='form-control select2 select2-hidden-accessible' id="{{$name}}" tyle="width: 100%;" tabindex="-1" aria-hidden="true"
                 {{$required}} {{$readonly}} {!!$placeholder!!} {{$disabled}} name="{{$name}}{{($form['relationship_table'])?'[]':''}}" {{ ($form['relationship_table'])?'multiple="multiple"':'' }} >
-            @if($form['dataenum'])
+            @if(isset($form['dataenum']) && $form['dataenum'])
                 <option value=''>{{cbLang('text_prefix_option')}} {{$form['label']}}</option>
                 <?php
                 $dataenum = $form['dataenum'];

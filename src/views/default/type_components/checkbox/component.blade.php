@@ -6,7 +6,7 @@
     </label>
     <div class="{{$col_width?:'col-sm-10'}}">
 
-        @if($form['dataenum']!='')
+        @if(isset($form['dataenum']) && $form['dataenum']!='')
             <?php
             @$value = explode(";", $value);
             @array_walk($value, 'trim');
